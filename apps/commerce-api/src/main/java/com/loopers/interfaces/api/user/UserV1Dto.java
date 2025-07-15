@@ -1,8 +1,8 @@
-package com.loopers.interfaces.api.users;
+package com.loopers.interfaces.api.user;
 
-import com.loopers.application.users.UsersInfo;
+import com.loopers.application.user.UserInfo;
 
-public class UsersV1Dto {
+public class UserV1Dto {
 
     public record RegisterUserRequest(
             String loginId,
@@ -18,13 +18,13 @@ public class UsersV1Dto {
             String birth,
             String gender
     ){
-        public static UsersResponse from(UsersInfo usersInfo) {
+        public static UsersResponse from(UserInfo userInfo) {
             return new UsersResponse(
-                    usersInfo.id(),
-                    usersInfo.loginId(),
-                    usersInfo.email(),
-                    usersInfo.birth(),
-                    usersInfo.gender()
+                    userInfo.id(),
+                    userInfo.loginId(),
+                    userInfo.email(),
+                    userInfo.birth(),
+                    userInfo.gender()
             );
         }
     }

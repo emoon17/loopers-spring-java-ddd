@@ -1,4 +1,4 @@
-package com.loopers.domain.users;
+package com.loopers.domain.user;
 
 import com.loopers.domain.BaseEntity;
 import com.loopers.support.error.CoreException;
@@ -15,16 +15,16 @@ import java.time.format.DateTimeParseException;
 @Slf4j
 @Getter
 @Table(name = "users")
-public class UsersModel extends BaseEntity {
+public class UserModel extends BaseEntity {
 
     private String loginId;
     private String email;
     private String birth;
     private String gender; // W : women / M : Men
 
-    protected UsersModel() {}
+    protected UserModel() {}
 
-    public UsersModel(final String loginId, final String email, final String birth, final String gender) {
+    public UserModel(final String loginId, final String email, final String birth, final String gender) {
         if(loginId == null || !loginId.matches("^[a-zA-Z0-9]{1,10}$")){
             throw new CoreException(ErrorType.BAD_REQUEST, "ID는 영문 및 숫자 10자 이내여야 합니다.");
         }

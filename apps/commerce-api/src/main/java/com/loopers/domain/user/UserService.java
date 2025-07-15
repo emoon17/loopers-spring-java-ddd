@@ -1,4 +1,4 @@
-package com.loopers.domain.users;
+package com.loopers.domain.user;
 
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -8,18 +8,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UsersService {
+public class UserService {
 
-    private final UsersRepository usersRepository;
+    private final UserRepository userRepository;
 
 
     @Transactional
-    public UsersModel register(String loginId, String email, String birth, String gender){
-        if(usersRepository.existsByLoginId(loginId)){
+    public UserModel register(String loginId, String email, String birth, String gender){
+        if(userRepository.existsByLoginId(loginId)){
             throw new CoreException(ErrorType.BAD_REQUEST, "이미 존재하는 ID 입니다.");
         }
 
-        UsersModel user = new UsersModel(loginId, email, birth, gender);
-        return usersRepository.save(user);
+        UserModel user = new UserModel(loginId, email, birth, gender);
+        return userRepository.save(user);
     }
 }
