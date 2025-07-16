@@ -4,10 +4,7 @@ import com.loopers.application.user.UserFacade;
 import com.loopers.application.user.UserInfo;
 import com.loopers.interfaces.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,4 +26,20 @@ public class UserV1Controller implements UserV1ApiSpec {
 
         return ApiResponse.success(UserV1Dto.UsersResponse.from(userInfo));
     }
+
+    @GetMapping("/me")
+    @Override
+    public ApiResponse<UserV1Dto.UsersResponse> getUsers(
+            @RequestHeader("X-USER-ID") String loginId) {
+        return ApiResponse.success(
+                new UserV1Dto.UsersResponse(
+                        1L,
+                        loginId,
+                        "test@test.com",
+                        "1999-01-01",
+                        "M"
+                )
+        );
+    }
+
 }

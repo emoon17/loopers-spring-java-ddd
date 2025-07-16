@@ -13,24 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserV1ApiE2ETest {
-
-    /*
-    *** E2E 테스트**
-    - [o]  회원 가입이 성공할 경우, 생성된 유저 정보를 응답으로 반환한다.
-    - [ ]  회원 가입 시에 성별이 없을 경우, `400 Bad Request` 응답을 반환한다.
-    *
-    * */
-
 
     @Autowired
     private TestRestTemplate testRestTemplate ;
@@ -47,21 +36,22 @@ public class UserV1ApiE2ETest {
         databaseCleanUp.truncateAllTables();
     }
 
+    private static final String ENDPOINT = "/api/v1/users";
+
     @DisplayName("POST /api/v1/users")
     @Nested
     class Register {
 
-        private static final String ENDPOINT = "/api/v1/users";
 
         @DisplayName("회원 가입이 성공한 경우, 생성된 유저 정보를 응답으로 반환한다.")
         @Test
         void returnUserInfo_whenRegisterIsSuccessful() {
             // arrange
             UserV1Dto.RegisterUserRequest request = new UserV1Dto.RegisterUserRequest(
-              "test123",
-              "test@test.com",
-              "1999-01-01",
-              "M"
+                    "test123",
+                    "test@test.com",
+                    "1999-01-01",
+                    "M"
             );
 
             // act
@@ -97,7 +87,7 @@ public class UserV1ApiE2ETest {
 
             // act
             ParameterizedTypeReference<ApiResponse<UserV1Dto.UsersResponse>> responseType =
-            new ParameterizedTypeReference<>() {};
+                    new ParameterizedTypeReference<>() {};
             ResponseEntity<ApiResponse<UserV1Dto.UsersResponse>> response =
                     testRestTemplate.exchange(
                             ENDPOINT,
@@ -115,6 +105,50 @@ public class UserV1ApiE2ETest {
 
     }
 
+    /**
+     * **E2E 테스트**
+     *
+     * - [ ]  내 정보 조회에 성공할 경우, 해당하는 유저 정보를 응답으로 반환한다.
+     * - [ ]  존재하지 않는 ID 로 조회할 경우, `404 Not Found` 응답을 반환한다.
+     *
+     */
+
+    @DisplayName("GET /api/v1/users/me")
+    @Nested
+    class GetUser {
+
+        @DisplayName("내 정보 조회에 성공할 경우, 해당하는 유저 정보를 응답으로 반환한다.")
+        @Test
+        void returnUserInfo_whenGetUserIsSuccessful() {
+            // arrange
+            UserModel savedUser = userJpaRepository.save(
+                    new UserModel("test123", "test@test.com", "1999-01-01", "M")
+            );
+
+            String requestUrl = ENDPOINT + "/me";
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-USER-ID", savedUser.getLoginId());
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            // act
+            ParameterizedTypeReference<ApiResponse<UserV1Dto.UsersResponse>> responseType =
+                    new ParameterizedTypeReference<>() {};
+            ResponseEntity<ApiResponse<UserV1Dto.UsersResponse>> response =
+                    testRestTemplate.exchange(
+                            requestUrl,
+                            HttpMethod.GET,
+                            entity,
+                            responseType
+                    );
+            // assert
+            assertAll(
+                    () -> assertThat(response.getBody().data().email()).isEqualTo(savedUser.getEmail()),
+                    () -> assertThat(response.getBody().data().birth()).isEqualTo(savedUser.getBirth()),
+                    () -> assertThat(response.getBody().data().gender()).isEqualTo(savedUser.getGender())
+            );
+        }
+
+    }
 
 
 }
