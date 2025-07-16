@@ -69,4 +69,5 @@ class ExampleServiceIntegrationTest {
             assertThat(exception.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
         }
     }
+
 }
