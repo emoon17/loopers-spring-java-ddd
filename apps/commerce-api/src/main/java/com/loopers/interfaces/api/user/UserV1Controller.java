@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserV1Controller implements UserV1ApiSpec {
     private final UserFacade userFacade;
 
-    @PostMapping("/register")
+    @PostMapping
     @Override
     public ApiResponse<UserV1Dto.UsersResponse> registerUser(
             @RequestBody UserV1Dto.RegisterUserRequest request
