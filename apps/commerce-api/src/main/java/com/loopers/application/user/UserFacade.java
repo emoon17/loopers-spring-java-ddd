@@ -24,6 +24,7 @@ public class UserFacade {
     }
 
     public UserInfo getUserInfoByLoginId(String loginId){
+
         UserModel user = userService.getUserByLoginId(loginId);
         if(user == null){
             throw new CoreException(ErrorType.NOT_FOUND);
