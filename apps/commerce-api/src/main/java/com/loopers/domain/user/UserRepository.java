@@ -9,4 +9,5 @@ public interface UserRepository {
 
     boolean existsByLoginId(String loginId);
 
+
 }

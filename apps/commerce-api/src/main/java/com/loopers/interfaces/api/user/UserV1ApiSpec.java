@@ -4,6 +4,8 @@ import com.loopers.interfaces.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "Users V1 API", description = "User 관련 API 입니다.")
 public interface UserV1ApiSpec {
@@ -15,4 +17,8 @@ public interface UserV1ApiSpec {
     ApiResponse<UserV1Dto.UsersResponse> registerUser(
             @Schema(description = "유저 등록 요청 정보") UserV1Dto.RegisterUserRequest registerUserRequest
     );
+
+    @GetMapping("/me")
+    ApiResponse<UserV1Dto.UsersResponse> getUsers(
+            @RequestHeader("X-USER-ID") String loginId);
 }
