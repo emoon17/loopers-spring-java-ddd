@@ -18,7 +18,14 @@ public interface UserV1ApiSpec {
             @Schema(description = "유저 등록 요청 정보") UserV1Dto.RegisterUserRequest registerUserRequest
     );
 
-    @GetMapping("/me")
+    @Operation(
+            summary = "유저 조회",
+            description = "등록된 유저 정보를 조회합니다."
+    )
     ApiResponse<UserV1Dto.UsersResponse> getUsers(
-            @RequestHeader("X-USER-ID") String loginId);
+            @RequestHeader("X-USER-ID")
+            @Schema(description = "유저 식별자 (loginId)", example = "test123")
+            String loginId
+    );
+
 }

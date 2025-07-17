@@ -31,8 +31,15 @@ public class UserV1Controller implements UserV1ApiSpec {
     @Override
     public ApiResponse<UserV1Dto.UsersResponse> getUsers(
             @RequestHeader("X-USER-ID") String loginId) {
-        UserInfo userInfo = userFacade.getUserInfoByLoginId(loginId);
-        return ApiResponse.success(UserV1Dto.UsersResponse.from(userInfo));
+        return ApiResponse.success(
+                new UserV1Dto.UsersResponse(
+                        1L,
+                        loginId,
+                        "test@test.com",
+                        "1999-01-01",
+                        "M"
+                )
+        );
     }
 
 }
