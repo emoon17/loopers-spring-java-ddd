@@ -39,7 +39,7 @@ public class PointV1ApiE2ETest {
 
     private static final String ENDPOINT = "/api/v1/points";
 
-    @DisplayName("POST /api/v1/points")
+    @DisplayName("GET /api/v1/points")
     @Nested
     class GetPoints{
         /**
