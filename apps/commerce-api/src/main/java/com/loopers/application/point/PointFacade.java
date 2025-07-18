@@ -19,4 +19,9 @@ public class PointFacade {
         PointModel pointModel = pointService.getPointModelByLoginId(loginId);
         return PointInfo.from(pointModel);
     }
+
+    public PointInfo chargePoint(String loginId, Long amount) {
+        PointModel pointModel = pointService.chargePoint(loginId, amount);
+        return PointInfo.from(pointModel);
+    }
 }
