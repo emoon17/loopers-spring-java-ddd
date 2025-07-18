@@ -2,7 +2,9 @@ package com.loopers.interfaces.api.point;
 
 import com.loopers.application.point.PointInfo;
 import com.loopers.domain.point.PointModel;
+import com.loopers.domain.user.UserModel;
 import com.loopers.infrastructure.point.PointJpaRepository;
+import com.loopers.infrastructure.user.UserJpaRepository;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.utils.DatabaseCleanUp;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -28,6 +30,9 @@ public class PointV1ApiE2ETest {
 
     @Autowired
     private PointJpaRepository pointJpaRepository;
+
+    @Autowired
+    private UserJpaRepository userJpaRepository;
 
     @Autowired
     private DatabaseCleanUp databaseCleanUp;
@@ -119,9 +124,18 @@ public class PointV1ApiE2ETest {
         @Test
         void returnTotalAmount_whenExistingUserChargesPoints() {
             // arrange
+            String requestUrl = ENDPOINT + "/charge";
+            userJpaRepository.save(
+                    new UserModel(
+                            "test1234",
+                            "test@test.com",
+                            "1999-01-01",
+                            "M"
+                    )
+            );
             PointModel savePoint = pointJpaRepository.save(
                     new PointModel(
-                            "teet1234",
+                            "test1234",
                             1000L
                     )
             );
@@ -132,7 +146,6 @@ public class PointV1ApiE2ETest {
             );
 
             // act
-            String requestUrl = ENDPOINT + "/charge";
             ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType =
                     new ParameterizedTypeReference<>(){};
             ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
