@@ -55,8 +55,7 @@ public class PointV1ApiE2ETest {
             PointModel savePoint = pointJpaRepository.save(
                     new PointModel(
                             "test1234",
-                            1000L,
-                            10000L
+                            1000L
                     )
             );
 
@@ -79,7 +78,7 @@ public class PointV1ApiE2ETest {
             assertAll(
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
-                    () -> assertThat(response.getBody().data().totalAmount()).isEqualTo(10000)
+                    () -> assertThat(response.getBody().data().amount()).isEqualTo(1000)
             );
         }
 
@@ -90,8 +89,7 @@ public class PointV1ApiE2ETest {
             pointJpaRepository.save(
                     new PointModel(
                             "test1234",
-                            1000L,
-                            10000L
+                            1000L
                     )
             );
             HttpHeaders headers = new HttpHeaders();
@@ -111,6 +109,74 @@ public class PointV1ApiE2ETest {
 
             // assert
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DisplayName("POST /api/v1/points/charge")
+    @Nested
+    class PointCharge{
+        @DisplayName("존재하는 유저가 1000원을 충전할 경우, 충전된 보유 총량을 응답으로 반환한다.")
+        @Test
+        void returnTotalAmount_whenExistingUserChargesPoints() {
+            // arrange
+            PointModel savePoint = pointJpaRepository.save(
+                    new PointModel(
+                            "teet1234",
+                            1000L
+                    )
+            );
+
+            PointV1Dto.PointChargeRequest requestBody = new PointV1Dto.PointChargeRequest(
+                    savePoint.getLoginId(),
+                    1000L
+            );
+
+            // act
+            String requestUrl = ENDPOINT + "/charge";
+            ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType =
+                    new ParameterizedTypeReference<>(){};
+            ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
+                    restTemplate.exchange(
+                            requestUrl,
+                            HttpMethod.POST,
+                            new HttpEntity<>(requestBody),
+                            responseType
+                    );
+
+            // assert
+            assertThat(response.getBody().data().amount()).isEqualTo(2000L);
+        }
+
+        @DisplayName("존재하지 않는 유저로 요청할 경우, 404 Not Found 응답을 반환한다.")
+        @Test
+        void throwNotFoundException_whenUserIdMissing(){
+            // arrange
+            String requestUrl = ENDPOINT + "/charge";
+
+            pointJpaRepository.save(
+                    new PointModel(
+                            "teet1234",
+                            1000L
+                    )
+            );
+            PointV1Dto.PointChargeRequest requestBody = new PointV1Dto.PointChargeRequest(
+                    "1111",
+                    1000L
+            );
+
+            // act
+            ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType =
+                    new ParameterizedTypeReference<>(){};
+            ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
+                    restTemplate.exchange(
+                            requestUrl,
+                            HttpMethod.POST,
+                            new HttpEntity<>(requestBody),
+                            responseType
+                    );
+
+            // assert
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
     }
 }

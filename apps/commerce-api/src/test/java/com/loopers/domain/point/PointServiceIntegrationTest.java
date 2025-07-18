@@ -1,7 +1,10 @@
 package com.loopers.domain.point;
 
 import com.loopers.infrastructure.point.PointJpaRepository;
+import com.loopers.interfaces.api.point.PointV1ApiSpec;
 import com.loopers.interfaces.api.point.PointV1Dto;
+import com.loopers.support.error.CoreException;
+import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 
 @Slf4j
@@ -41,8 +45,7 @@ public class PointServiceIntegrationTest {
             PointModel savepoint = pointJpaRepository.save(
                     new PointModel(
                             "test1234",
-                            1000L,
-                            10000L
+                            1000L
                     )
             );
 
@@ -61,8 +64,7 @@ public class PointServiceIntegrationTest {
             pointJpaRepository.save(
                     new PointModel(
                             "test1234",
-                            1000L,
-                            10000L
+                            1000L
                     )
             );
 
@@ -71,6 +73,34 @@ public class PointServiceIntegrationTest {
 
             // assert
             assertThat(result).isNull();
+        }
+    }
+
+    @DisplayName("포인트 충전할 때,")
+    @Nested
+    class ChargePoint{
+        @DisplayName("존재하지 않는 유저 ID 로 충전을 시도한 경우, 실패한다.")
+        @Test
+        void throwException_whenLoginIdIsNotExists(){
+            // arrange
+            PointModel pointModel = pointJpaRepository.save(
+                    new PointModel(
+                            "test1234",
+                            1000L
+                    )
+            );
+
+            // act
+            CoreException result =
+                    assertThrows(CoreException.class,
+                            () -> pointService.chargePoint(
+                                    "1111",
+                                    pointModel.getAmount()
+                            ));
+
+
+            // assert
+            assertThat(result.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
         }
     }
 }
