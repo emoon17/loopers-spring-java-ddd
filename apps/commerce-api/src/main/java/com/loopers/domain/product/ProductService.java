@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -19,8 +20,8 @@ public class ProductService {
         return productRepository.findAllProducts(sortCondition);
     };
 
-//    public ProductModel getProductById(Long id) {
-//
-//    }
+    public Optional<ProductModel> getProduct(ProductModel product) {
+        return productRepository.findProduct(product);
+    }
 
 }

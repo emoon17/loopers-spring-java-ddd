@@ -5,6 +5,7 @@ import com.loopers.domain.brand.BrandModel;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Table(name = "product")
-public class ProductModel extends BaseEntity {
+public class ProductModel {
 
+    @Id
     private String productId;
     private String productName;
     private String productDescription;

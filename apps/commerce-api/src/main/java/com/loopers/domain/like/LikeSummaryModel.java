@@ -22,14 +22,14 @@ public class LikeSummaryModel extends BaseEntity {
         this.totalLikeCount = totalLikeCount;
     }
 
-//    public void increase() {
-//        this.totalLikeCount++;
-//    }
-//
-//    public void decrease() {
-//        if (this.totalLikeCount > 0) {
-//            this.totalLikeCount--;
-//        }
-//
-//    }
+    public void increase() {
+        this.totalLikeCount++;
+    }
+
+    public void decrease() {
+        if (this.totalLikeCount > 0) {
+            this.totalLikeCount--;
+        }
+
+    }
 }

@@ -1,7 +1,8 @@
 package com.loopers.application.product;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.loopers.domain.product.ProductModel;
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ProductInfo(
         String productId,
         String productName,
@@ -10,10 +11,11 @@ public record ProductInfo(
         int price,
         int stock,
         String brandName,
-        int likeCount
+        int likeCount,
+        Boolean isLike
 ) {
 
-    public static ProductInfo from(ProductModel product, String brandName, int likeCount) {
+    public static ProductInfo fromList(ProductModel product, String brandName, int likeCount) {
         return new ProductInfo(
                 product.getProductId(),
                 product.getProductName(),
@@ -22,7 +24,22 @@ public record ProductInfo(
                 product.getPrice(),
                 product.getStock(),
                 brandName,
-                likeCount
+                likeCount,
+                false
+        );
+    }
+
+    public static ProductInfo fromDetail(ProductModel product, String brandName, int likeCount, boolean isLike) {
+        return new ProductInfo(
+                product.getProductId(),
+                product.getProductName(),
+                product.getProductDescription(),
+                product.getBrandId(),
+                product.getPrice(),
+                product.getStock(),
+                brandName,
+                likeCount,
+                isLike
         );
     }
 }
