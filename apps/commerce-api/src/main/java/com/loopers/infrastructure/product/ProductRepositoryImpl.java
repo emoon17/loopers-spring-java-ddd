@@ -28,4 +28,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Optional<ProductModel> findProduct(ProductModel product) {
         return productJpaRepository.findById(product.getProductId());
     }
+
+    @Override
+    public Optional<ProductModel> findProductByProductId(String productId) {
+        return productJpaRepository.findProductByProductId(productId);
+    }
+
+    @Override
+    public void saveProduct(ProductModel product) {
+        productJpaRepository.save(product);
+    }
 }

@@ -22,13 +22,13 @@ public class ProductModelTest {
                 "테스트 상품",
                 "테스트 상품입니당",
                     "brand1",
-                    1000,
-                    3
+                    1000L,
+                    3L
             );
 
             // act
             CoreException result = assertThrows(CoreException.class, () -> {
-                product.decreaseStock(4);
+                product.decreaseStock(4L);
             });
 
             // assert
@@ -44,12 +44,12 @@ public class ProductModelTest {
                     "테스트 상품",
                     "테스트 상품입니당",
                     "brand1",
-                    1000,
-                    3
+                    1000L,
+                    3L
             );
 
             // act
-            product.decreaseStock(2);
+            product.decreaseStock(2L);
 
             // assert
             assertThat(product.getStock()).isEqualTo(1);

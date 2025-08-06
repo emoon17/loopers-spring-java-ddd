@@ -2,6 +2,8 @@ package com.loopers.domain.product;
 
 import com.loopers.application.product.ProductSortCondition;
 import com.loopers.domain.brand.BrandModel;
+import com.loopers.support.error.CoreException;
+import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -22,6 +24,14 @@ public class ProductService {
 
     public Optional<ProductModel> getProduct(ProductModel product) {
         return productRepository.findProduct(product);
+    }
+
+    public Optional<ProductModel> getProductByProductId(String productId) {
+        return productRepository.findProductByProductId(productId);
+    }
+
+    public void saveProduct(ProductModel product) {
+        productRepository.saveProduct(product);
     }
 
 }

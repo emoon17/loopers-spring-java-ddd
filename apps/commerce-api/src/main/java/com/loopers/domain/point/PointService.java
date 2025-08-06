@@ -28,4 +28,14 @@ public class PointService {
         pointModel.chargePoint(amount);
         return pointRepository.save(pointModel);
     }
+
+    public PointModel usePoint(String loginId, Long amount) {
+        if (!userRepository.existsByLoginId(loginId)) {
+            throw new CoreException(ErrorType.NOT_FOUND);
+        }
+
+        PointModel pointModel = pointRepository.findPointByLoginId(loginId);
+        pointModel.usePoint(amount);
+        return pointRepository.save(pointModel);
+    }
 }

@@ -9,4 +9,6 @@ public interface ProductRepository {
 
     List<ProductModel> findAllProducts(ProductSortCondition sortCondition);
     Optional<ProductModel> findProduct(ProductModel product);
+    Optional<ProductModel> findProductByProductId(String productId);
+    void saveProduct(ProductModel product);
 }

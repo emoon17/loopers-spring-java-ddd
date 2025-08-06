@@ -29,4 +29,18 @@ public class PointModel extends BaseEntity {
 
         this.amount += chargeAmount;
     }
+
+    public void usePoint(Long useAmount) {
+        if (useAmount == null || useAmount <= 0) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "사용 금액은 0보다 커야 합니다.");
+        }
+
+        if (this.amount < useAmount) {
+            throw new CoreException(ErrorType.CONFLICT, "포인트가 부족합니다.");
+        }
+
+        this.amount -= useAmount;
+    }
+
+
 }

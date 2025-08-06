@@ -8,8 +8,8 @@ public record ProductInfo(
         String productName,
         String description,
         String brandId,
-        int price,
-        int stock,
+        Long price,
+        Long stock,
         String brandName,
         int likeCount,
         Boolean isLike

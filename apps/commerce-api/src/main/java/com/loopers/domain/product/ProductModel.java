@@ -21,12 +21,12 @@ public class ProductModel {
     private String productName;
     private String productDescription;
     private String brandId;
-    private int price;
-    private int stock;
+    private Long price;
+    private Long stock;
 
     protected ProductModel() {};
 
-    public ProductModel(String productId, String productName, String productDescription, String brandId, int price, int stock) {
+    public ProductModel(String productId, String productName, String productDescription, String brandId, Long price, Long stock) {
         this.productId = productId;
         this.productName = productName;
         this.productDescription = productDescription;
@@ -38,7 +38,7 @@ public class ProductModel {
         this.stock = stock;
     }
 
-    public void decreaseStock(int quantity) {
+    public void decreaseStock(Long quantity) {
         if(stock < quantity) {
             throw new CoreException(ErrorType.CONFLICT, "재고가 부족합니다.");
         }
