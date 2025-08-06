@@ -76,8 +76,8 @@ public class ProductServiceIntegrationTest {
                             "상품1",
                             "상품1임당",
                             "brand1",
-                            10000,
-                            3
+                            10000L,
+                            3L
                     )
             );
 
@@ -87,8 +87,8 @@ public class ProductServiceIntegrationTest {
                             "상품2",
                             "상품2임당",
                             "brand2",
-                            30000,
-                            6
+                            30000L,
+                            6L
                     )
             );
 
@@ -111,8 +111,8 @@ public class ProductServiceIntegrationTest {
         BrandModel brand = brandJpaRepository.save(new BrandModel("B001", "나이키"));
         brandJpaRepository.flush();
 
-        ProductModel product1 = productJpaRepository.save(new ProductModel("P001", "신발", "편한 신발", brand.getBrandId(), 10000, 5));
-        ProductModel product2 = productJpaRepository.save(new ProductModel("P002", "운동화", "빠른 신발", brand.getBrandId(), 20000, 3));
+        ProductModel product1 = productJpaRepository.save(new ProductModel("P001", "신발", "편한 신발", brand.getBrandId(), 10000L, 5L));
+        ProductModel product2 = productJpaRepository.save(new ProductModel("P002", "운동화", "빠른 신발", brand.getBrandId(), 20000L, 3L));
         productJpaRepository.flush();
 
         likeSummaryJpaRepository.save(new LikeSummaryModel(product1.getProductId(), 5));
@@ -169,7 +169,7 @@ public class ProductServiceIntegrationTest {
 
         // 2. 상품 저장
         ProductModel product = productJpaRepository.save(
-                new ProductModel("P001", "운동화", "편한 운동화", brand.getBrandId(), 50000, 10)
+                new ProductModel("P001", "운동화", "편한 운동화", brand.getBrandId(), 50000L, 10L)
         );
         productJpaRepository.flush();
 

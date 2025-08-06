@@ -93,8 +93,8 @@ public class CartServiceIntegrationTest {
             CartModel cart = CartModel.create(user.getLoginId());
             cartJpaRepository.save(cart);
 
-            ProductModel product = new ProductModel("p001", "나이키", "신발쓰", "brand01", 1000, 10);
-            CartItemModel cartItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1, 1000);
+            ProductModel product = new ProductModel("p001", "나이키", "신발쓰", "brand01", 1000L, 10L);
+            CartItemModel cartItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1L, 1000L);
 
             // Act
             cartService.addOrUpdateCartItem(cartItem, product);
@@ -120,11 +120,11 @@ public class CartServiceIntegrationTest {
             CartModel cart = CartModel.create(user.getLoginId());
             cartJpaRepository.save(cart);
 
-            ProductModel product = new ProductModel("p001", "상품", "설명", "brand01", 1000, 10);
-            CartItemModel existingItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1, 1000);
+            ProductModel product = new ProductModel("p001", "상품", "설명", "brand01", 1000L, 10L);
+            CartItemModel existingItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1L, 1000L);
             cartItemJpaRepository.save(existingItem);
 
-            CartItemModel inputItem = new CartItemModel("anyId", cart.getCartId(), product.getProductId(), 2, 2000);
+            CartItemModel inputItem = new CartItemModel("anyId", cart.getCartId(), product.getProductId(), 2L, 2000L);
 
             // Act
             cartService.addOrUpdateCartItem(inputItem, product);
@@ -154,15 +154,15 @@ public class CartServiceIntegrationTest {
                     "item001",
                     cart.getCartId(),
                     "product01",
-                    2,
-                    2000
+                    2L,
+                    2000L
             );
             CartItemModel item2 = new CartItemModel(
                     "item002",
                     cart.getCartId(),
                     "product02",
-                    1,
-                    1000
+                    1L,
+                    1000L
             );
             cartItemJpaRepository.save(item1);
             cartItemJpaRepository.save(item2);

@@ -59,13 +59,13 @@ public class ProductWithBrandServiceIntegrationTest {
         brandJpaRepository.save(brandA);
         brandJpaRepository.save(brandB);
 
-        ProductModel product1 = new ProductModel("p001", "운동화", "러닝화임당", "b001", 49000, 10);
-        ProductModel product2 = new ProductModel("p002", "츄리닝", "삼선츄리닝임당", "b002", 80000, 3);
+        ProductModel product1 = new ProductModel("p001", "운동화", "러닝화임당", "b001", 49000L, 10L);
+        ProductModel product2 = new ProductModel("p002", "츄리닝", "삼선츄리닝임당", "b002", 80000L, 3L);
         productJpaRepository.save(product1);
         productJpaRepository.save(product2);
 
         List<ProductModel> products = productJpaRepository.findAll().stream()
-                .sorted(Comparator.comparingInt(ProductModel::getPrice).reversed()) // 가격 내림차순
+                .sorted(Comparator.comparingLong(ProductModel::getPrice).reversed()) // 가격 내림차순
                 .collect(Collectors.toList());
 
         Map<String, BrandModel> brandsById = brandJpaRepository.findAll().stream()

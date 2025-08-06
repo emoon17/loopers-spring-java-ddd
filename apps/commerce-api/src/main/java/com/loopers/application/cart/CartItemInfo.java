@@ -5,8 +5,8 @@ import com.loopers.domain.cart.CartItemModel;
 public record CartItemInfo(
         String cartItemId,
         String productId,
-        int quantity,
-        int price
+        Long quantity,
+        Long price
 ) {
     public static CartItemInfo from(CartItemModel item) {
         return new CartItemInfo(

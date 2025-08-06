@@ -34,7 +34,7 @@ public class CartService {
 
         if(existingCartItem.isPresent()) {
             CartItemModel cartItemModel = existingCartItem.get();
-            cartItemModel.increaseQuantity(cartItem.getQuantity());
+            cartItemModel.increaseQuantity(Math.toIntExact(cartItem.getQuantity()));
             cartRepository.saveCartItem(cartItemModel);
         } else {
             cartRepository.saveCartItem(cartItem);
@@ -50,6 +50,10 @@ public class CartService {
          return Optional.of(cartRepository.findCartItemsByCartId(cart.getCartId()))
                  .filter(items -> !items.isEmpty())
                  .orElseThrow(() -> new CoreException(ErrorType.BAD_REQUEST, "장바구니가 비었습니다."));
+    }
+
+    public void clearCart(CartModel cart) {
+        cartRepository.clearCart(cart);
     }
 
 

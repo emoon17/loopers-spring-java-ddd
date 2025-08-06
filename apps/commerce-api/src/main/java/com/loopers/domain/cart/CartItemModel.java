@@ -17,12 +17,12 @@ public class CartItemModel {
     private String cartItemId;
     private String cartId;
     private String productId;
-    private int quantity;
-    private int price;
+    private Long quantity;
+    private Long price;
 
     protected CartItemModel() {}
 
-    public CartItemModel(String cartItemId, String cartId, String productId, int quantity, int price) {
+    public CartItemModel(String cartItemId, String cartId, String productId, Long quantity, Long price) {
         this.cartItemId = cartItemId;
         this.cartId = cartId;
         this.productId = productId;
@@ -30,17 +30,16 @@ public class CartItemModel {
         this.price = price;
     }
 
-    public void increaseQuantity(int quantityToAdd) {
-        int unit = this.price / this.quantity;  // 기존 단가 저장
-        this.quantity += quantityToAdd;
-        this.price = unit * this.quantity;
+    public void increaseQuantity(int quantity) {
+        this.quantity += quantity;
+        this.price = this.unitPrice() * this.quantity;
     }
 
     public boolean isSameProduct(CartItemModel other) {
         return this.productId.equals(other.productId);
     }
 
-    private int unitPrice() {
+    private long unitPrice() {
         return price / quantity;
     }
 }

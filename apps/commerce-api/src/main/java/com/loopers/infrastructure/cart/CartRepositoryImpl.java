@@ -34,6 +34,11 @@ public class CartRepositoryImpl implements CartRepository {
     }
 
     @Override
+    public void clearCart(CartModel cart) {
+        cartJpaRepository.delete(cart);
+    }
+
+    @Override
     public Optional<CartItemModel> findCartItemByCartIdProductId(CartItemModel cartItem, ProductModel product) {
         return cartItemJpaRepository
                 .findByCartIdAndProductId(cartItem.getCartId(), product.getProductId());
