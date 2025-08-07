@@ -4,6 +4,7 @@ import com.loopers.application.order.OrderFacade;
 import com.loopers.domain.cart.CartItemModel;
 import com.loopers.domain.cart.CartModel;
 import com.loopers.domain.cart.CartService;
+import com.loopers.domain.coupon.CouponModel;
 import com.loopers.domain.point.PointModel;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductModel;
@@ -12,11 +13,13 @@ import com.loopers.domain.user.UserModel;
 import com.loopers.domain.userCoupon.UserCouponModel;
 import com.loopers.infrastructure.cart.CartItemJpaRepository;
 import com.loopers.infrastructure.cart.CartJpaRepository;
+import com.loopers.infrastructure.coupon.CouponJpaRepository;
 import com.loopers.infrastructure.order.OrderItemJpaRepository;
 import com.loopers.infrastructure.order.OrderJpaRepository;
 import com.loopers.infrastructure.point.PointJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
 import com.loopers.infrastructure.user.UserJpaRepository;
+import com.loopers.infrastructure.userCoupon.UserCouponJapRepository;
 import com.loopers.support.error.CoreException;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.*;
@@ -25,6 +28,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static com.loopers.domain.coupon.CouponModel.CouponType.FIXED;
+import static com.loopers.domain.coupon.CouponModel.TargetType.PRODUCT;
 
 @SpringBootTest
 public class OrderFacadeIntegrationTest {
@@ -66,6 +75,10 @@ public class OrderFacadeIntegrationTest {
     private DatabaseCleanUp databaseCleanUp;
     @Autowired
     private UserJpaRepository userJpaRepository;
+    @Autowired
+    private CouponJpaRepository couponJpaRepository;
+    @Autowired
+    private UserCouponJapRepository userCouponJapRepository;
 
     @AfterEach
     void tearDown() { databaseCleanUp.truncateAllTables(); }
@@ -158,7 +171,7 @@ public class OrderFacadeIntegrationTest {
             );
 
             // Act & Assert
-            Assertions.assertThrows( CoreException.class, () -> orderFacade.createOrderFromCart(user, usercoupon));
+            Assertions.assertThrows( CoreException.class, () -> orderFacade.createOrderFromCart(user, usercoupon.getUserCouponId()));
 
             Assertions.assertEquals(0, orderJpaRepository.findAll().size());
             Assertions.assertEquals(10L, productService.getProductByProductId(productId).get().getStock());
@@ -198,7 +211,7 @@ public class OrderFacadeIntegrationTest {
             cartItemJpaRepository.save(new CartItemModel(UUID.randomUUID().toString(), cart.getCartId(), productId, quantity, price));
 
             // Act Assert
-            Assertions.assertThrows( CoreException.class, () -> orderFacade.createOrderFromCart(user, usercoupon));
+            Assertions.assertThrows( CoreException.class, () -> orderFacade.createOrderFromCart(user, usercoupon.getUserCouponId()));
 
             Assertions.assertEquals(0, orderJpaRepository.findAll().size());
             Assertions.assertEquals(1L, productService.getProductByProductId(productId).get().getStock());
@@ -236,7 +249,7 @@ public class OrderFacadeIntegrationTest {
 
             // act & assert
             Assertions.assertThrows(CoreException.class, () -> {
-                orderFacade.createOrderFromCart(user, invalidUserCoupon);
+                orderFacade.createOrderFromCart(user, invalidUserCoupon.getCouponId());
             });
 
             Assertions.assertEquals(0, orderJpaRepository.findAll().size());
@@ -245,7 +258,78 @@ public class OrderFacadeIntegrationTest {
         }
 
 
+        @DisplayName("동시성체크")
+        @Nested
+        class CoCurrencyOrderCheck {
+            @DisplayName("동일한 상품에 대해 여러 주문이 동시에 요청되어도, 재고가 정상적으로 차감된다.")
+            @Test
+            void stockIsCorrectlyDecreased_whenMultipleOrderRequestSameProduct()throws InterruptedException{
+                // arrange
+                int threadCount = 30;
+                int countDownLatchCount = 40;
+                ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+                CountDownLatch countDownLatch = new CountDownLatch(countDownLatchCount);
 
+                String productId = "p001";
+                long price = 1000L;
+
+                long stock = 100L;
+                long orderStock = 5L;
+
+                productService.saveProduct(new ProductModel(productId, "나이키", "신발", "b001", price, stock));
+                couponJpaRepository.save(
+                        new CouponModel(
+                                "counpon123",
+                                FIXED,
+                                5000L,
+                                null,
+                                PRODUCT,
+                                productId,
+                                "2025-01-01",
+                                "2025-12-31"
+                        )
+                );
+
+                for(int i = 0; i < countDownLatchCount; i++){
+                    final int idx = i;
+                    executorService.submit(() -> {
+                       try {
+                            String loginId = "user123" + idx;
+                            UserModel user = new UserModel(loginId, loginId + "@test.com", "1999-01-01", "M");
+                            userJpaRepository.save(user);
+
+                            pointService.savePoint(new PointModel(loginId, 100000L));
+
+                            CartModel cart = cartService.getOrCreateCart(user);
+                            cartItemJpaRepository.save(new CartItemModel(UUID.randomUUID().toString(), cart.getCartId(), productId, orderStock, price));
+
+                            UserCouponModel usercoupon = new UserCouponModel(
+                                    "userCoupon" + idx,
+                                    loginId,
+                                    "counpon123",
+                                    "2025-01-01"
+                            );
+                            userCouponJapRepository.save(usercoupon);
+                            userCouponJapRepository.flush();
+
+                            orderFacade.createOrderFromCart(user, "userCoupon" + idx);
+
+                       } catch (Exception e){
+                           System.out.println("에러::::::: " + e.getMessage());
+                       }finally {
+                           countDownLatch.countDown();
+                       }
+
+                    });
+                }
+                countDownLatch.await();
+
+                ProductModel finalProduct = productService.getProductByProductId(productId).orElseThrow();
+                Assertions.assertEquals(0L, finalProduct.getStock());
+
+                Assertions.assertEquals(20, orderJpaRepository.findAll().size());
+            }
+        }
     }
 
 }
