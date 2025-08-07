@@ -1,5 +1,6 @@
 package com.loopers.domain.order;
 
+import com.loopers.application.order.OrderFacade;
 import com.loopers.domain.cart.CartItemModel;
 import com.loopers.domain.cart.CartModel;
 import com.loopers.domain.cart.CartService;
@@ -8,6 +9,7 @@ import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductModel;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserModel;
+import com.loopers.domain.userCoupon.UserCouponModel;
 import com.loopers.infrastructure.cart.CartItemJpaRepository;
 import com.loopers.infrastructure.cart.CartJpaRepository;
 import com.loopers.infrastructure.order.OrderItemJpaRepository;
@@ -15,6 +17,7 @@ import com.loopers.infrastructure.order.OrderJpaRepository;
 import com.loopers.infrastructure.point.PointJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
 import com.loopers.infrastructure.user.UserJpaRepository;
+import com.loopers.support.error.CoreException;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,9 @@ public class OrderFacadeIntegrationTest {
 
     @Autowired
     private PointService pointService;
+
+    @Autowired
+    private OrderFacade orderFacade;
 
     @Autowired
     private PointJpaRepository pointJpaRepository;
@@ -64,7 +70,7 @@ public class OrderFacadeIntegrationTest {
     @AfterEach
     void tearDown() { databaseCleanUp.truncateAllTables(); }
 
-    @DisplayName("장바구니에서 주문할 때,")
+    @DisplayName("사용자가 주문할 때,")
     @Nested
     class CreateOrder {
         @DisplayName("포인트 차감, 재고 차감 후 주문 저장하여 주문정보를 반환한다.")
@@ -116,6 +122,7 @@ public class OrderFacadeIntegrationTest {
             orderService.saveOrder(order);
             orderService.saveOrderItems(orderItems);
 
+
             // Assert
             Assertions.assertEquals(1, orderJpaRepository.findAll().size());
             Assertions.assertEquals(1, orderItemJpaRepository.findAll().size());
@@ -123,6 +130,122 @@ public class OrderFacadeIntegrationTest {
             Assertions.assertEquals(8L, productService.getProductByProductId(productId).get().getStock());
 
         }
+
+        @DisplayName("포인트가 부족할 경우 주문은 실패하고, 전체 롤백처리가 되어야한다.")
+        @Test
+        void rollback_whenPointNotEnough() {
+            // Arrange
+            String loginId = "user123";
+            String productId = "p001";
+            long quantity = 2;
+            long price = 1000L;
+
+            ProductModel product = new ProductModel(productId, "나이키", "신발", "b001", price, 10L);
+            productService.saveProduct(product);
+
+            UserModel user = new UserModel(loginId, "email@test.com", "1999-01-01", "M");
+            userJpaRepository.save(user);
+            CartModel cart = cartService.getOrCreateCart(user);
+            cartItemJpaRepository.save(new CartItemModel(UUID.randomUUID().toString(), cart.getCartId(), productId, quantity, price));
+
+            pointService.savePoint(new PointModel(loginId, 100L));
+
+            UserCouponModel usercoupon = new UserCouponModel(
+                    "usercoupon1",
+                    "user123",
+                    "coupon123",
+                    "2025-01-01"
+            );
+
+            // Act & Assert
+            Assertions.assertThrows( CoreException.class, () -> orderFacade.createOrderFromCart(user, usercoupon));
+
+            Assertions.assertEquals(0, orderJpaRepository.findAll().size());
+            Assertions.assertEquals(10L, productService.getProductByProductId(productId).get().getStock());
+            Assertions.assertEquals(100L, pointService.getPointModelByLoginId(loginId).getAmount());
+        }
+
+        @DisplayName("재고가 부족한 경우 주문은 실패하고, 전체 롤백된다.")
+        @Test
+        void rollback_whenStockNotEnough() {
+            // Arrange
+            String loginId = "user123";
+            String productId = "p001";
+            long quantity = 5;
+            long price = 1000L;
+
+            ProductModel prduct = new ProductModel(productId, "나이키", "신발", "b001", price, 1L);
+            productService.saveProduct(prduct);
+
+            pointService.savePoint(new PointModel(loginId, 100000L));
+
+            UserModel user = new UserModel(
+              loginId,
+              "email@test.com",
+              "1999-01-01",
+              "W"
+            );
+            userJpaRepository.save(user);
+
+            UserCouponModel usercoupon = new UserCouponModel(
+                    "usercoupon1",
+                    "user123",
+                    "coupon123",
+                    "2025-01-01"
+            );
+
+            CartModel cart = cartService.getOrCreateCart(user);
+            cartItemJpaRepository.save(new CartItemModel(UUID.randomUUID().toString(), cart.getCartId(), productId, quantity, price));
+
+            // Act Assert
+            Assertions.assertThrows( CoreException.class, () -> orderFacade.createOrderFromCart(user, usercoupon));
+
+            Assertions.assertEquals(0, orderJpaRepository.findAll().size());
+            Assertions.assertEquals(1L, productService.getProductByProductId(productId).get().getStock());
+            Assertions.assertEquals(100000L, pointService.getPointModelByLoginId(loginId).getAmount());
+        }
+
+        @DisplayName("쿠폰에서 작업이 실패할 경우 롤백처리한다.")
+        @Test
+        void returnRollback_whenCouponFailed() {
+            // arrange
+            String loginId = "user123";
+            String productId = "p001";
+            long quantity = 1;
+            long price = 1000L;
+
+            ProductModel product = new ProductModel(productId, "나이키", "신발", "b001", price, 5L);
+            productService.saveProduct(product);
+
+            UserModel user = new UserModel(loginId, "email@test.com", "1999-01-01", "M");
+            userJpaRepository.save(user);
+
+            pointService.savePoint(new PointModel(loginId, 5000L));
+
+            CartModel cart = cartService.getOrCreateCart(user);
+            cartItemJpaRepository.save(new CartItemModel(
+                    UUID.randomUUID().toString(), cart.getCartId(), productId, quantity, price
+            ));
+
+            UserCouponModel invalidUserCoupon = new UserCouponModel(
+                    "usercoupon1",
+                    loginId,
+                    "non-exist-coupon-id",
+                    "2025-01-01"
+            );
+
+            // act & assert
+            Assertions.assertThrows(CoreException.class, () -> {
+                orderFacade.createOrderFromCart(user, invalidUserCoupon);
+            });
+
+            Assertions.assertEquals(0, orderJpaRepository.findAll().size());
+            Assertions.assertEquals(5L, productService.getProductByProductId(productId).get().getStock());
+            Assertions.assertEquals(5000L, pointService.getPointModelByLoginId(loginId).getAmount());
+        }
+
+
+
     }
 
 }
