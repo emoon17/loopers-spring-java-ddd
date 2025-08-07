@@ -1,5 +1,6 @@
 package com.loopers.application.order;
 
+import com.loopers.application.coupon.CouponFacade;
 import com.loopers.domain.cart.CartItemModel;
 import com.loopers.domain.cart.CartModel;
 import com.loopers.domain.cart.CartService;
@@ -10,6 +11,7 @@ import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductModel;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserModel;
+import com.loopers.domain.userCoupon.UserCouponModel;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import jakarta.transaction.Transactional;
@@ -25,9 +27,10 @@ public class OrderFacade {
     private final OrderService orderService;
     private final ProductService productService;
     private final PointService pointService;
+    private final CouponFacade couponFacade;
 
     @Transactional
-    public OrderInfo createOrderFromCart(UserModel user) {
+    public OrderInfo createOrderFromCart(UserModel user, UserCouponModel usercoupon) { // userCouponModel ㅍ람추가예정
         // 1. 유저 장바구니 조회
         CartModel cart = cartService.getOrCreateCart(user);
         List<CartItemModel> cartItems = cartService.getAllCart(cart);
@@ -43,6 +46,7 @@ public class OrderFacade {
         orderItems.forEach(item -> item.assignOrderId(order.getOrderId()));
 
         // 쿠폰 차감
+        couponFacade.applyCoupon(user, orderItems, usercoupon);
         
         // 4. 포인트 차감
         pointService.usePoint(user.getLoginId(), order.getTotalPrice());
