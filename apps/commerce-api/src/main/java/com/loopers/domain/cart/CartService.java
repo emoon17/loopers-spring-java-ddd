@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +21,9 @@ public class CartService {
 
     private final CartRepository cartRepository;
 
+    @Transactional
     public CartModel getOrCreateCart(UserModel user) {
-        return cartRepository.findCartByLoginId(user)
+        return cartRepository.findCartByLoginIdWithLock(user)
                 .orElseGet(() -> {
                     CartModel newCart = CartModel.create(user.getLoginId());
                     cartRepository.saveCart(newCart);
@@ -46,8 +48,9 @@ public class CartService {
         cartRepository.saveCart(cart);
     }
 
+    @Transactional
     public List<CartItemModel> getAllCart(CartModel cart) {
-         return Optional.of(cartRepository.findCartItemsByCartId(cart.getCartId()))
+         return Optional.of(cartRepository.findCartItemsByCartIdWithLock(cart.getCartId()))
                  .filter(items -> !items.isEmpty())
                  .orElseThrow(() -> new CoreException(ErrorType.BAD_REQUEST, "장바구니가 비었습니다."));
     }

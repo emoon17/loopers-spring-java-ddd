@@ -23,6 +23,11 @@ public class CartRepositoryImpl implements CartRepository {
     }
 
     @Override
+    public Optional<CartModel> findCartByLoginIdWithLock(UserModel user) {
+        return cartJpaRepository.findCartByLoginIdWithLock(user.getLoginId());
+    }
+
+    @Override
     public Optional<CartModel> findCartByCartId(String cartId) {
         return cartJpaRepository.findCartByCartId(cartId);
     }
@@ -51,8 +56,8 @@ public class CartRepositoryImpl implements CartRepository {
     }
 
     @Override
-    public List<CartItemModel> findCartItemsByCartId(String cartId) {
-        return cartItemJpaRepository.findCartItemsByCartId(cartId);
+    public List<CartItemModel> findCartItemsByCartIdWithLock(String cartId) {
+        return cartItemJpaRepository.findCartItemsByCartIdWithLock(cartId);
     }
 
 }
