@@ -5,6 +5,8 @@ import com.loopers.domain.point.PointRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Component
 public class PointRepositoryImpl implements PointRepository {
@@ -19,5 +21,10 @@ public class PointRepositoryImpl implements PointRepository {
     public PointModel findPointByLoginId(String loginId) {
         return pointJpaRepository.findPointByLoginId(loginId)
                 .orElse(null);
+    }
+
+    @Override
+    public Optional<PointModel> findPointByLoginIdWithLock(String loginId) {
+        return pointJpaRepository.findByLoginIdWithLock(loginId);
     }
 }

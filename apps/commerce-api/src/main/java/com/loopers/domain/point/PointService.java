@@ -30,12 +30,13 @@ public class PointService {
     }
 
     public PointModel usePoint(String loginId, Long amount) {
-        if (!userRepository.existsByLoginId(loginId)) {
-            throw new CoreException(ErrorType.NOT_FOUND);
-        }
-
-        PointModel pointModel = pointRepository.findPointByLoginId(loginId);
+        PointModel pointModel = pointRepository.findPointByLoginIdWithLock(loginId)
+                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
         pointModel.usePoint(amount);
         return pointRepository.save(pointModel);
+    }
+
+    public void savePoint(PointModel pointModel) {
+        pointRepository.save(pointModel);
     }
 }
