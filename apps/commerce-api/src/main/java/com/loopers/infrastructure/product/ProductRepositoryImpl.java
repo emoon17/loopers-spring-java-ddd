@@ -35,6 +35,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    public Optional<ProductModel> findProductByProductIdWithLock(String productId) {
+        return productJpaRepository.findProductByProductIdWithLock(productId);
+    }
+
+    @Override
     public void saveProduct(ProductModel product) {
         productJpaRepository.save(product);
     }
