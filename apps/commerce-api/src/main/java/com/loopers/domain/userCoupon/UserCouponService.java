@@ -14,8 +14,8 @@ import java.util.Optional;
 public class UserCouponService {
     private final UserCouponRepository userCouponRepository;
 
-    public UserCouponModel getUserCoupon(UserCouponModel userCouponModel) {
-        return userCouponRepository.findUserCoupon(userCouponModel)
+    public UserCouponModel getUserCoupon(String userCouponId) {
+        return userCouponRepository.findUserCoupon(userCouponId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "사용자의 쿠폰이 존재하지 않습니다."));
 
     }

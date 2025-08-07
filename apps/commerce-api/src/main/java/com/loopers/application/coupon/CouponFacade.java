@@ -19,9 +19,9 @@ public class CouponFacade {
     private final CouponService couponService;
     private final UserCouponService userCouponService;
 
-    public void applyCoupon(UserModel user, List<OrderItemModel> orderItems, UserCouponModel userCouponModel) {
+    public void applyCoupon(UserModel user, List<OrderItemModel> orderItems, String userCouponId) {
         // 1. 유저 쿠폰 조회
-        UserCouponModel userCoupon = userCouponService.getUserCoupon(userCouponModel);
+        UserCouponModel userCoupon = userCouponService.getUserCoupon(userCouponId);
 
         // 2. 유저 검증
         userCoupon.validateOwner(user);

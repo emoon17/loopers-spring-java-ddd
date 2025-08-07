@@ -13,7 +13,7 @@ import java.util.Optional;
 public class UserCouponRepositoryImpl implements UserCouponRepository {
     private final UserCouponJapRepository userCouponjpaRepository;
     @Override
-    public Optional<UserCouponModel> findUserCoupon(UserCouponModel userCouponModel) {
-        return userCouponjpaRepository.findById(userCouponModel.getCouponId());
+    public Optional<UserCouponModel> findUserCoupon(String userCouponId) {
+        return userCouponjpaRepository.findById(userCouponId);
     }
 }
