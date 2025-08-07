@@ -330,6 +330,86 @@ public class OrderFacadeIntegrationTest {
                 Assertions.assertEquals(20, orderJpaRepository.findAll().size());
             }
         }
+
+        @DisplayName("동일한 유저가 서로 다른 주문을 동시에 수행해도, 포인트가 정상적으로 차감된다.")
+        @Test
+        void pointIsCorrectlyDeducted_whenSameUserPlacesDifferentOrdersConcurrently()throws InterruptedException{
+            // arrange
+
+            String loginId = "user123";
+            String productId = "p001";
+            long price = 1000L;
+            long userPoint = 500_00L;
+
+            UserModel user = new UserModel(
+                    loginId,
+                    loginId + "@test.com",
+                    "1999-01-01",
+                    "M"
+            );
+            userJpaRepository.save(user);
+
+            pointService.savePoint(new PointModel(loginId, userPoint));
+            productService.saveProduct(new ProductModel(productId, "신발", "런닝화", "b001", price, 100L));
+            couponJpaRepository.save(
+                    new CouponModel(
+                            "counpon123",
+                            FIXED,
+                            5000L,
+                            null,
+                            PRODUCT,
+                            productId,
+                            "2025-01-01",
+                            "2025-12-31"
+                    )
+            );
+            int threadCount = 30;
+            int countDownLatchCount = 40;
+            ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+            CountDownLatch countDownLatch = new CountDownLatch(countDownLatchCount);
+
+            for(int i = 0; i < countDownLatchCount; i++){
+                int idx = i;
+                executorService.submit(() -> {
+                   try {
+                       CartModel cart = cartService.getOrCreateCart(user);
+                       cartItemJpaRepository.save(new CartItemModel(
+                               UUID.randomUUID().toString(),
+                               cart.getCartId(),
+                               productId,
+                               1L,
+                               price
+                       ));
+
+                       UserCouponModel userCoupon = new UserCouponModel(
+                               "coupon" + idx,
+                               loginId,
+                               "counpon123",
+                               "2025-01-01"
+                       );
+                       userCouponJapRepository.save(userCoupon);
+
+                       orderFacade.createOrderFromCart(user, userCoupon.getUserCouponId());
+                   } catch (Exception e) {
+                       System.out.println("error:::::: " + e.getMessage());
+                   } finally {
+                       countDownLatch.countDown();
+                   }
+                });
+            }
+            countDownLatch.await();
+
+            // assert
+            long totalOrderPrice = orderJpaRepository.findAll()
+                    .stream()
+                    .mapToLong(OrderModel::getTotalPrice)
+                    .sum();
+            long expectedPoint = userPoint - totalOrderPrice;
+            long realPoint = pointService.getPointModelByLoginId(loginId).getAmount();
+
+            Assertions.assertEquals(expectedPoint, realPoint);
+
+        }
     }
 
 }
