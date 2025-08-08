@@ -11,10 +11,10 @@ public interface LikeRepository {
     Optional<LikeSummaryModel> findLikeCountByProductId(String productId);
     Optional<LikeModel> findByLoginIdAndProductId(String loginId, String productId);
 
-    void saveLike(LikeModel likeModel);
+    LikeModel saveLike(LikeModel likeModel);
     void deleteLike(LikeModel likeModel);
 
-    void saveLikeSummary(LikeSummaryModel likeSummaryModel);
+    LikeSummaryModel saveLikeSummary(LikeSummaryModel likeSummaryModel);
 
 
 }
