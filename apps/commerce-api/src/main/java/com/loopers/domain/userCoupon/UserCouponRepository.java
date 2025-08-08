@@ -4,5 +4,6 @@ import java.util.Optional;
 
 public interface UserCouponRepository {
 
-    Optional<UserCouponModel> findUserCoupon(String userCouponId);
+    Optional<UserCouponModel> findUserCouponByUserCouponId(String userCouponId);
+    UserCouponModel saveUserCoupon(UserCouponModel userCoupon);
 }

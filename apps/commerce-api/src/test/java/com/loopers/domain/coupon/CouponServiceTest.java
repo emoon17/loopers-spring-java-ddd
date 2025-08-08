@@ -1,19 +1,28 @@
 package com.loopers.domain.coupon;
 
+import com.loopers.application.coupon.CouponFacade;
 import com.loopers.domain.order.OrderItemModel;
+import com.loopers.domain.user.UserModel;
+import com.loopers.domain.userCoupon.UserCouponModel;
+import com.loopers.domain.userCoupon.UserCouponService;
 import com.loopers.infrastructure.coupon.CouponJpaRepository;
+import com.loopers.infrastructure.user.UserJpaRepository;
+import com.loopers.infrastructure.userCoupon.UserCouponJapRepository;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.loopers.domain.coupon.CouponModel.CouponType.FIXED;
+import static com.loopers.domain.coupon.CouponModel.TargetType.PRODUCT;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -21,10 +30,19 @@ import static org.junit.Assert.assertThrows;
 public class CouponServiceTest {
 
     @Autowired
+    private CouponFacade couponFacade;
+
+    @Autowired
     private CouponService couponService;
 
     @Autowired
     private CouponJpaRepository couponJpaRepository;
+
+    @Autowired
+    private UserJpaRepository userJpaRepository;
+
+    @Autowired
+    private UserCouponJapRepository userCouponJapRepository;
 
     @Autowired
     private DatabaseCleanUp databaseCleanUp;
@@ -85,4 +103,7 @@ public class CouponServiceTest {
 
     }
 
+
 }
+
+

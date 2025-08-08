@@ -1,10 +1,12 @@
 package com.loopers.domain.userCoupon;
 
+import com.loopers.domain.user.UserModel;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -14,9 +16,20 @@ import java.util.Optional;
 public class UserCouponService {
     private final UserCouponRepository userCouponRepository;
 
-    public UserCouponModel getUserCoupon(String userCouponId) {
-        return userCouponRepository.findUserCoupon(userCouponId)
-                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "사용자의 쿠폰이 존재하지 않습니다."));
+    @Transactional
+    public UserCouponModel getUserCouponByUserCouponId(String userCouponId) {
+        return userCouponRepository.findUserCouponByUserCouponId(userCouponId)
+                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "이미 사용된 쿠폰입니다."));
 
+    }
+
+    @Transactional
+    public UserCouponModel useCoupon(UserModel user, String userCouponId) {
+        UserCouponModel userCoupon = getUserCouponByUserCouponId(userCouponId);
+
+        userCoupon.validateOwner(user);
+        userCoupon.use();
+
+        return userCouponRepository.saveUserCoupon(userCoupon);
     }
 }

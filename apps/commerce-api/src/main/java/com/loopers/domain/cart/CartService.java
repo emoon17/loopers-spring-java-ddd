@@ -7,6 +7,7 @@ import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +24,14 @@ public class CartService {
 
     @Transactional
     public CartModel getOrCreateCart(UserModel user) {
-        return cartRepository.findCartByLoginIdWithLock(user)
+        return cartRepository.findCartByLoginId(user)
                 .orElseGet(() -> {
-                    CartModel newCart = CartModel.create(user.getLoginId());
-                    cartRepository.saveCart(newCart);
-                    return newCart;
+                    try {
+                        CartModel newCart = CartModel.create(user.getLoginId());
+                        return cartRepository.saveCart(newCart);
+                    } catch (DataIntegrityViolationException dup) {
+                        return cartRepository.findCartByLoginId(user).orElseThrow();
+                    }
                 });
     }
 

@@ -34,8 +34,8 @@ public class CartRepositoryImpl implements CartRepository {
 
 
     @Override
-    public void saveCart(CartModel cart) {
-        cartJpaRepository.save(cart);
+    public CartModel saveCart(CartModel cart) {
+        return cartJpaRepository.save(cart);
     }
 
     @Override

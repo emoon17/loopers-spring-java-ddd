@@ -66,7 +66,7 @@ public class OrderFacade {
                 .toList();
 
         // 8. 카트 비우기
-        cartService.clearCart(cart);
+//        cartService.clearCart(cart);
         return OrderInfo.from(order, orderItemInfos);
 
     }

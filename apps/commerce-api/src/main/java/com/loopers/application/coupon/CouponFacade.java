@@ -9,9 +9,12 @@ import com.loopers.domain.userCoupon.UserCouponService;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
@@ -19,17 +22,15 @@ public class CouponFacade {
     private final CouponService couponService;
     private final UserCouponService userCouponService;
 
+    @Transactional
     public void applyCoupon(UserModel user, List<OrderItemModel> orderItems, String userCouponId) {
-        // 1. 유저 쿠폰 조회
-        UserCouponModel userCoupon = userCouponService.getUserCoupon(userCouponId);
-
-        // 2. 유저 검증
-        userCoupon.validateOwner(user);
-
-        // 3. 사용 여부 확인
-        userCoupon.use();
-
-        // 4. 쿠폰 조회
+        UserCouponModel userCoupon;
+        try {
+            userCoupon = userCouponService.useCoupon(user, userCouponId);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
+            // 다른 스레드가 먼저 쿠폰을 사용함 → 비즈니스 의미로 변환
+            throw new CoreException(ErrorType.BAD_REQUEST, "이미 사용된 쿠폰입니다.");
+        }
         CouponModel coupon = couponService.getCouponbyCouponId(userCoupon.getCouponId());
         // 5. 할인 대상 여부 확인 (상품ID or 브랜드ID 일치) -- todo. orderItme(productId -> targetId로 변경)
 //        boolean isApplicable = orderItems.stream().anyMatch(item ->

@@ -3,5 +3,5 @@ package com.loopers.domain.coupon;
 import java.util.Optional;
 
 public interface CouponRepository {
-    Optional<CouponModel> findCouponByCouponId(String couponId);
+    Optional<CouponModel> findCouponByCouponIdWithLock(String couponId);
 }

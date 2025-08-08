@@ -6,6 +6,7 @@ import com.loopers.support.error.ErrorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +21,9 @@ public class UserCouponModel {
     private String couponId;
     private boolean used;
     private String issuedAt; // 사용일자
+
+    @Version
+    private Long version;
 
     protected UserCouponModel() {}
 
@@ -39,7 +43,7 @@ public class UserCouponModel {
     }
 
     public void validateNotUsed() {
-        if (used && (issuedAt != null || issuedAt != "")) {
+        if (used) {
             throw new CoreException(ErrorType.BAD_REQUEST, "이미 사용된 쿠폰입니다.");
         }
     }
