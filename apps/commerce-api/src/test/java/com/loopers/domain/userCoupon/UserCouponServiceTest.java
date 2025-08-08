@@ -43,10 +43,11 @@ public class UserCouponServiceTest {
 
             // act + assert
             CoreException result = assertThrows(CoreException.class, () ->
-                    userCouponService.getUserCoupon(usercoupon.getUserCouponId())
+                    userCouponService.getUserCouponByUserCouponId(usercoupon.getUserCouponId())
             );
 
             assertThat(result.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
         }
+
     }
 }
