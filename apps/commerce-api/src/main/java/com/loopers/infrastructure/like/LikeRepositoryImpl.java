@@ -32,8 +32,8 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
-    public void saveLike(LikeModel likeModel) {
-        likeJpaRepository.save(likeModel);
+    public LikeModel saveLike(LikeModel likeModel) {
+       return likeJpaRepository.save(likeModel);
     }
 
     @Override
@@ -42,8 +42,8 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
-    public void saveLikeSummary(LikeSummaryModel likeSummaryModel) {
-        likeSummaryJpaRepository.save(likeSummaryModel);
+    public LikeSummaryModel saveLikeSummary(LikeSummaryModel likeSummaryModel) {
+        return likeSummaryJpaRepository.save(likeSummaryModel);
     }
 
 

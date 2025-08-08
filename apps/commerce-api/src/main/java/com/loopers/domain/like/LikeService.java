@@ -7,6 +7,7 @@ import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class LikeService {
     private final LikeRepository likeRepository;
 
+    @Transactional
     public void createLike(String loginId, String productId) {
         Optional<LikeModel> likeModel = likeRepository.findByLoginIdAndProductId(loginId, productId);
 
@@ -30,16 +32,23 @@ public class LikeService {
                     true
             );
             likeRepository.saveLike(like);
-            increaseLikeSummary(productId);
+            LikeSummaryModel summary = likeRepository.findLikeCountByProductId(productId).orElse(null);
+            summary.increase();
+            likeRepository.saveLikeSummary(summary);
+//            increaseLikeSummary(productId);
         } else {
             LikeModel like = likeModel.get();
             if(!like.isLike()){
                 like.like();
-                increaseLikeSummary(productId);
+                LikeSummaryModel summary = likeRepository.findLikeCountByProductId(productId).orElse(null);
+                summary.increase();
+                likeRepository.saveLikeSummary(summary);
+//                increaseLikeSummary(productId);
             }
         }
     }
 
+    @Transactional
     public void deleteLike(String loginId, String productId) {
         Optional<LikeModel> optional = likeRepository.findByLoginIdAndProductId(loginId, productId);
 
