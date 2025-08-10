@@ -4,6 +4,7 @@ import com.loopers.application.product.*;
 import com.loopers.domain.brand.BrandModel;
 import com.loopers.domain.like.LikeModel;
 import com.loopers.domain.like.LikeSummaryModel;
+import com.loopers.domain.order.OrderItemModel;
 import com.loopers.domain.user.UserModel;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.like.LikeJpaRepository;
@@ -24,6 +25,9 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -210,6 +214,55 @@ public class ProductServiceIntegrationTest {
         assertThat(result.isLike()).isTrue();
     }
 
+    @DisplayName("상품 동시성 체크")
+    @Nested
+    class ConcurrencyProduct{
+        @DisplayName("동일한 상품에 대해 재고차감 요청이 여러번 들어와도, 재고가 정상적으로 차감된다.")
+        @Test
+        void stockIsCorrectlyDecreased_whenMultipleDecreasedRequestSameProduct()throws InterruptedException{
+        // arrange
+            ExecutorService executor = Executors.newFixedThreadPool(1000);
+            CountDownLatch countDownLatch = new CountDownLatch(2000);
+
+            String productId = "P001";
+            long initialStock = 5L;
+            productService.saveProduct(
+                    new ProductModel(
+                            productId,
+                            "운동화",
+                            "런닝 운동화",
+                            "b001",
+                            1000L,
+                            initialStock
+                    )
+            );
+            List<OrderItemModel> items = List.of(
+                    new OrderItemModel(
+                            "orderItem1",
+                            "Order123",
+                            productId,
+                            1L,
+                            1000L)
+            );
+
+            // act
+            for(int i = 0; i < 2000; i++){
+                executor.submit(() -> {
+                    try {
+                        productService.decreaseProductStock(items);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+                });
+            }
+
+            countDownLatch.await();
+            // assert
+            ProductModel finalProduct = productService.getProductByProductId(productId).orElseThrow();
+            assertThat(finalProduct.getStock()).isEqualTo(0);
+        }
+
+    }
 
 
 
