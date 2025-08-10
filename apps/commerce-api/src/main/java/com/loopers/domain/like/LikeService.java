@@ -21,56 +21,34 @@ public class LikeService {
     private final LikeRepository likeRepository;
 
     @Transactional
-    public void createLike(String loginId, String productId) {
-        Optional<LikeModel> likeModel = likeRepository.findByLoginIdAndProductId(loginId, productId);
-
-        if(likeModel.isEmpty()) {
-            LikeModel like = new LikeModel(
-                    UUID.randomUUID().toString(),
-                    productId,
-                    loginId,
-                    true
-            );
-            likeRepository.saveLike(like);
-            LikeSummaryModel summary = likeRepository.findLikeCountByProductId(productId).orElse(null);
-            summary.increase();
-            likeRepository.saveLikeSummary(summary);
-//            increaseLikeSummary(productId);
-        } else {
-            LikeModel like = likeModel.get();
-            if(!like.isLike()){
-                like.like();
-                LikeSummaryModel summary = likeRepository.findLikeCountByProductId(productId).orElse(null);
-                summary.increase();
-                likeRepository.saveLikeSummary(summary);
-//                increaseLikeSummary(productId);
-            }
+    public void like(String loginId, String productId) {
+        LikeModel likeModel = likeRepository.findByLoginIdAndProductId(loginId, productId).orElse(null);
+        if (likeModel != null && likeModel.isLike()) return;
+        if (likeModel == null) {
+                likeModel = new LikeModel(UUID.randomUUID().toString(), productId, loginId,true);
+                likeRepository.saveLike(likeModel);
         }
+        likeModel.like();
+        increaseLikeSummary(productId);
     }
 
     @Transactional
-    public void deleteLike(String loginId, String productId) {
-        Optional<LikeModel> optional = likeRepository.findByLoginIdAndProductId(loginId, productId);
-
-        if (optional.isPresent()) {
-            LikeModel like = optional.get();
-            if (like.isLike()) {
-                like.unlike();
-                decreaseLikeSummary(productId);
-            }
-        }
+    public void unLike(String loginId, String productId) {
+        int updated = likeRepository.demoteToFalseIfTrue(loginId, productId);
+        if (updated == 0) return;
+        decreaseLikeSummary(productId);
     }
 
-    private void increaseLikeSummary(String productId) {
-        LikeSummaryModel summary = likeRepository.findLikeCountByProductId(productId)
-                .orElseThrow(() -> new CoreException(ErrorType.INTERNAL_ERROR, "서버 오류가 발생했습니다."));
+    @Transactional
+    public void increaseLikeSummary(String productId) {
+        LikeSummaryModel summary = likeRepository.findLikeCountByProductIdWithLock(productId);
         summary.increase();
         likeRepository.saveLikeSummary(summary);
     }
 
-    private void decreaseLikeSummary(String productId) {
-        LikeSummaryModel summary = likeRepository.findLikeCountByProductId(productId)
-                .orElseThrow(() -> new CoreException(ErrorType.INTERNAL_ERROR, "서버 오류가 발생했습니다."));
+    @Transactional
+    public void decreaseLikeSummary(String productId) {
+        LikeSummaryModel summary = likeRepository.findLikeCountByProductIdWithLock(productId);
         summary.decrease();
         likeRepository.saveLikeSummary(summary);
     }
