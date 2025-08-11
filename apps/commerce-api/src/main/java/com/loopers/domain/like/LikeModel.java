@@ -1,10 +1,7 @@
 package com.loopers.domain.like;
 
 import com.loopers.domain.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,10 +15,8 @@ public class LikeModel extends BaseEntity {
     private String likeId;
     private String productId;
     private String loginId;
+    @Column(name="is_like")
     private boolean isLike;
-
-//    @Version
-//    private Long version;
 
     protected LikeModel() {}
 

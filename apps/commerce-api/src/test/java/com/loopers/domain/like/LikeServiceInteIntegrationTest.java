@@ -102,97 +102,69 @@ public class LikeServiceInteIntegrationTest {
         @DisplayName("동일한 상품에 대해 여러명이 좋아요 등록/취소 요청해도, 상품의 좋아요 개수가 정상 반영된다.")
         @Test
         void concurrentLikes_whenIncreaseExactlyOncePerUser() throws InterruptedException {
-            List<UserModel> users = List.of(
-                    new UserModel("user1", "example@text.com",   "2000-01-01", "W"),
-                    new UserModel("user2", "example@text.com",    "2000-01-01", "W"),
-                    new UserModel("user3", "example@text.com",   "2000-01-01", "W"),
-                    new UserModel("user4", "example@text.com",    "2000-01-01", "W"),
-                    new UserModel("user5", "example@text.com",    "2000-01-01", "W")
-            );
-            List<UserModel> savedUsers = users.stream()
-                    .map(userJpaRepository::save)
-                    .toList();
+            // arrange
+            String productId = "p001";
+            int useCount = 50;
 
-            productService.saveProduct(
-                    new ProductModel(
-                            "p001",
-                            "운동화",
-                            "런닝 운동화",
-                            "b001",
-                            1000L,
-                            5L
-                    )
-            );
+            likeSummaryJpaRepository.save(new LikeSummaryModel(productId, 0));
 
-            LikeSummaryModel likeSummary = likeSummaryJpaRepository.save(
-                    new LikeSummaryModel(
-                            "p001",
-                            0
-                    )
-            );
-
-
-
-            // act 1: 5명이 동시에 좋아요
-            int threads1 = savedUsers.size();
-            ExecutorService pool1 = Executors.newFixedThreadPool(threads1);
-            CountDownLatch ready1 = new CountDownLatch(threads1);
-            CountDownLatch start1 = new CountDownLatch(1);
-            CountDownLatch done1 = new CountDownLatch(threads1);
-
-            for (UserModel u : savedUsers) {
-                pool1.submit(() -> {
+            ExecutorService es = Executors.newFixedThreadPool(50);
+            CountDownLatch start = new CountDownLatch(1);
+            CountDownLatch end = new CountDownLatch(useCount);
+            for (int i = 0; i < useCount; i++) {
+                String loginId = "login" + i;
+                es.submit(() -> {
                     try {
-                        ready1.countDown();
-                        start1.await();
-                        likeService.createLike(u.getLoginId(), "p001");
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                        start.await();
+                        likeService.like(loginId, productId);
+                    } catch (Exception e) {
+                        System.out.println("error::: " + e);
                     } finally {
-                        done1.countDown();
+                        end.countDown();
                     }
                 });
+
             }
-            if (!ready1.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("Phase1 threads not ready");
-            start1.countDown();
-            done1.await(10, TimeUnit.SECONDS);
-            pool1.shutdownNow();
 
+            start.countDown();
+            end.await();
+            es.shutdown();
 
-            // then 1: 좋아요 수 = 5
-            likeSummary = likeSummaryJpaRepository.findLikeCountByProductId("p001").orElse(null);
-            int totalCount = likeSummary.getTotalLikeCount();
-            assertThat(totalCount).isEqualTo(5);
+            // assert
+            int summary = likeSummaryJpaRepository.findLikeCountByProductId(productId)
+                    .map(LikeSummaryModel::getTotalLikeCount)
+                    .orElseThrow(() -> new AssertionError("like_summary 가 존재하지 않음: " + productId));
 
-            // act 2: 3명이 동시에 싫어요(취소) — user1, user2, user3
-            List<UserModel> toUnlike = savedUsers.subList(0, 3);
-            int threads2 = toUnlike.size();
-            ExecutorService pool2 = Executors.newFixedThreadPool(threads2);
-            CountDownLatch ready2 = new CountDownLatch(threads2);
+            assertThat(summary).isEqualTo(useCount);
+
+            // 좋아요 취소
+            ExecutorService es2 = Executors.newFixedThreadPool(50);
             CountDownLatch start2 = new CountDownLatch(1);
-            CountDownLatch done2 = new CountDownLatch(threads2);
-
-            for (UserModel u : toUnlike) {
-                pool2.submit(() -> {
-                    try {
-                        ready2.countDown();
-                        start2.await();
-                        likeService.deleteLike(u.getLoginId(), "p001");
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } finally {
-                        done2.countDown();
-                    }
+            CountDownLatch end2 = new CountDownLatch(useCount);
+            for (int i = 0; i < useCount; i++) {
+                String loginId = "login" + i;
+                es2.submit(() -> {
+                   try{
+                       start2.await();
+                       likeService.unLike(loginId, productId);
+                   } catch (Exception e) {
+                       System.out.println("error::: " + e);
+                   } finally {
+                       end2.countDown();
+                   }
                 });
             }
-            if (!ready2.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("Phase2 threads not ready");
             start2.countDown();
-            done2.await(10, TimeUnit.SECONDS);
-            pool2.shutdownNow();
+            end2.await();
+            es.shutdown();
 
-            // then 2: 최종 좋아요 수 = 10 - 3 = 7
-            likeSummary = likeSummaryJpaRepository.findLikeCountByProductId("p001").orElse(null);
-            assertThat(likeSummary.getTotalLikeCount()).isEqualTo(2);
+            int afterUnlike = likeSummaryJpaRepository.findLikeCountByProductId(productId)
+                    .map(LikeSummaryModel::getTotalLikeCount).orElse(0);
+            assertThat(afterUnlike).isEqualTo(0);
+
+
         }
+
+
     }
 }

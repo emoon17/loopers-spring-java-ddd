@@ -19,9 +19,6 @@ public class LikeSummaryModel extends BaseEntity {
 
     private int totalLikeCount;
 
-//    @Version
-//    private Long version;
-
     protected LikeSummaryModel() {}
 
     public LikeSummaryModel(String productId, int totalLikeCount) {

@@ -27,23 +27,32 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
+    public LikeSummaryModel findLikeCountByProductIdWithLock(String productId) {
+        return likeSummaryJpaRepository.findLikeCountByProductIdWithLock(productId);
+    }
+
+    @Override
     public Optional<LikeModel> findByLoginIdAndProductId(String loginId, String productId) {
         return likeJpaRepository.findByLoginIdAndProductId(loginId, productId);
     }
 
     @Override
     public LikeModel saveLike(LikeModel likeModel) {
-       return likeJpaRepository.save(likeModel);
+        likeJpaRepository.save(likeModel);
+        likeJpaRepository.flush();
+        return likeModel;
     }
 
     @Override
-    public void deleteLike(LikeModel likeModel) {
-        likeJpaRepository.delete(likeModel);
+    public int demoteToFalseIfTrue(String loginId, String productId) {
+        return likeJpaRepository.demoteToFalseIfTrue(loginId, productId);
     }
 
     @Override
     public LikeSummaryModel saveLikeSummary(LikeSummaryModel likeSummaryModel) {
-        return likeSummaryJpaRepository.save(likeSummaryModel);
+        likeSummaryJpaRepository.save(likeSummaryModel);
+        likeSummaryJpaRepository.flush();
+        return likeSummaryModel;
     }
 
 
