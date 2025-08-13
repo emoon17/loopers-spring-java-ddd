@@ -19,7 +19,7 @@ public class BrandService {
         return brandRepository.findAllById(brandId);
     }
 
-    public Optional<BrandModel> getBrandByProductId(ProductModel product){
-        return brandRepository.findBrandByProductId(product);
+    public Optional<BrandModel> getBrandByProductId(String productId){
+        return brandRepository.findBrandByProductId(productId);
     }
 }

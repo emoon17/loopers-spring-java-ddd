@@ -20,7 +20,7 @@ public class BrandRepositoryImpl implements BrandRepository {
     }
 
     @Override
-    public Optional<BrandModel> findBrandByProductId(ProductModel product) {
-        return jpaRepository.findById(product.getProductId());
+    public Optional<BrandModel> findBrandByProductId(String productId) {
+        return jpaRepository.findById(productId);
     }
 }

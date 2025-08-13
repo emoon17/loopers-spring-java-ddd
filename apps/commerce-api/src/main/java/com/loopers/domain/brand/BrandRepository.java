@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface BrandRepository {
     List<BrandModel> findAllById(List<String> brandId);
-    Optional<BrandModel> findBrandByProductId(ProductModel product);
+    Optional<BrandModel> findBrandByProductId(String productId);
 }
