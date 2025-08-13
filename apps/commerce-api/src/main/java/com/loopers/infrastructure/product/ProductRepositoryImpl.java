@@ -1,10 +1,12 @@
 package com.loopers.infrastructure.product;
 
 import com.loopers.application.product.ProductSortCondition;
+import com.loopers.domain.product.ProductListVo;
 import com.loopers.domain.product.ProductModel;
 import com.loopers.domain.product.ProductRepository;
-import com.loopers.support.error.CoreException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +27,8 @@ public class ProductRepositoryImpl implements ProductRepository {
         return productJpaRepository.findAll(sort);    }
 
     @Override
-    public Optional<ProductModel> findProduct(ProductModel product) {
-        return productJpaRepository.findById(product.getProductId());
+    public Optional<ProductModel> findProduct(String productId) {
+        return productJpaRepository.findById(productId);
     }
 
     @Override
@@ -42,5 +44,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public void saveProduct(ProductModel product) {
         productJpaRepository.save(product);
+    }
+
+    @Override
+    public Page<ProductListVo> findAllProdcutListVo(String brandId, String sort, Pageable pageable) {
+        return productJpaRepository.findAllProdcutListVo(brandId, sort, pageable);
     }
 }

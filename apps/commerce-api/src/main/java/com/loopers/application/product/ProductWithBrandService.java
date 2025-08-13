@@ -18,7 +18,7 @@ public class ProductWithBrandService {
     public List<ProductWithBrand> toProductWithBrandList(List<ProductModel> products, Map<String, BrandModel> brandMap) {
         return products.stream()
                 .map(product -> {
-                    BrandModel brand = brandMap.get(product.getBrandId());
+                    BrandModel brand = brandMap.get(product.getBrand().getBrandId());
                     return toProductWithBrand(product, brand);
                 })
                 .collect(Collectors.toList());

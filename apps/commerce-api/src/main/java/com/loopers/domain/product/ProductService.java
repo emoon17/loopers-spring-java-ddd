@@ -7,6 +7,8 @@ import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +26,8 @@ public class ProductService {
         return productRepository.findAllProducts(sortCondition);
     }
 
-    ;
-
-    public Optional<ProductModel> getProduct(ProductModel product) {
-        return productRepository.findProduct(product);
+    public Optional<ProductModel> getProduct(String productId) {
+        return productRepository.findProduct(productId);
     }
 
     public Optional<ProductModel> getProductByProductId(String productId) {
@@ -50,6 +50,10 @@ public class ProductService {
 
     public void saveProduct(ProductModel product) {
         productRepository.saveProduct(product);
+    }
+
+    public Page<ProductListVo> getProducts(String brandId, String sort, Pageable pageable){
+        return productRepository.findAllProdcutListVo(brandId, sort, pageable);
     }
 
 }
