@@ -47,7 +47,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Page<ProductListVo> findAllProdcutListVo(String brandId, String sort, Pageable pageable) {
-        return productJpaRepository.findAllProdcutListVo(brandId, sort, pageable);
+    public Page<ProductListVo> findAllProdcutListVo(String brandName, String sort, Pageable pageable) {
+        return productJpaRepository.findAllProdcutListVo(brandName, sort, pageable);
     }
 }

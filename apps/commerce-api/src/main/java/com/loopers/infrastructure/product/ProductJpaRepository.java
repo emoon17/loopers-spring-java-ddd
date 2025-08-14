@@ -33,7 +33,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductModel, String
     from ProductModel p
     join p.brand b
     left join LikeSummaryModel ls on ls.productId = p.productId
-    where (:brandId is null or b.brandId = :brandId)
+    where (:brandName is null or b.brandName like concat('%', :brandName, '%'))
      order by
         case when :sort = 'LATEST'     then p.createdAt end desc,
         case when :sort = 'PRICE_ASC'  then p.price     end asc,
@@ -42,7 +42,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductModel, String
         case when :sort = 'LIKES_DESC' then coalesce(ls.totalLikeCount,0) end desc
 """)
     Page<ProductListVo> findAllProdcutListVo(
-            @Param("brandId") String brandId,
+            @Param("brandName") String brandName,
             @Param("sort") String sort,
             Pageable pageable
     );

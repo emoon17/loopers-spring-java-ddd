@@ -27,8 +27,8 @@ public class ProductFacade {
     private final ProductWithBrandService productWithBrandService;
     private final LikeService likeService;
 
-    public List<ProductInfo> getProductList(String brandId, String sort, Pageable pageable) {
-        var products = productService.getProducts(brandId, sort, pageable);
+    public List<ProductInfo> getProductList(String brandName, String sort, Pageable pageable) {
+        var products = productService.getProducts(brandName, sort, pageable);
         return products.stream()
                 .map(ProductInfo::fromList)
                 .collect(Collectors.toList());

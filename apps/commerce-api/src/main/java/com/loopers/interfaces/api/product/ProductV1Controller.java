@@ -24,13 +24,13 @@ public class ProductV1Controller implements ProductV1ApiSpec{
     @GetMapping
     @Override
     public ApiResponse<List<ProductV1Dto.ProductResponse>> getProducts(
-            @RequestParam(required = false) String brandId,
+            @RequestParam(required = false) String brandName,
             @RequestParam(defaultValue = "LATEST") ProductSortCondition sort,
             @RequestParam(defaultValue="0") int page,
             @RequestParam(defaultValue="20") int size
     ) {
         PageRequest pageable = PageRequest.of(page, size);
-        List<ProductInfo> productInfos = productFacade.getProductList(brandId, sort.name(), pageable);
+        List<ProductInfo> productInfos = productFacade.getProductList(brandName, sort.name(), pageable);
         List<ProductV1Dto.ProductResponse> responses = productInfos.stream()
                 .map(ProductV1Dto.ProductResponse::from)
                 .toList();

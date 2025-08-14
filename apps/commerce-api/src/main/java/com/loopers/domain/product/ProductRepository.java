@@ -14,5 +14,5 @@ public interface ProductRepository {
     Optional<ProductModel> findProductByProductId(String productId);
     Optional<ProductModel> findProductByProductIdWithLock(String productId);
     void saveProduct(ProductModel product);
-    Page<ProductListVo> findAllProdcutListVo(String brandId, String sort, Pageable pageable);
+    Page<ProductListVo> findAllProdcutListVo(String brandName, String sort, Pageable pageable);
 }

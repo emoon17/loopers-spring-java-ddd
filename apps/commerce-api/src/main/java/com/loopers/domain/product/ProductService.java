@@ -52,8 +52,8 @@ public class ProductService {
         productRepository.saveProduct(product);
     }
 
-    public Page<ProductListVo> getProducts(String brandId, String sort, Pageable pageable){
-        return productRepository.findAllProdcutListVo(brandId, sort, pageable);
+    public Page<ProductListVo> getProducts(String brandName, String sort, Pageable pageable){
+        return productRepository.findAllProdcutListVo(brandName, sort, pageable);
     }
 
 }

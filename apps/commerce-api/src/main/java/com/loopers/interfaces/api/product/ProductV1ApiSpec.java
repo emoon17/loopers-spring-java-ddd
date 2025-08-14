@@ -17,7 +17,7 @@ public interface ProductV1ApiSpec {
             description = "등록된 상품의 전체 목록을 조회합니다."
     )
     ApiResponse<List<ProductV1Dto.ProductResponse>> getProducts(
-            String brandId,
+            String brandName,
             ProductSortCondition sort,
             int page,
             int size
