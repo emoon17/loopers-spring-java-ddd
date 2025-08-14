@@ -30,7 +30,7 @@ public class ProductV1Controller implements ProductV1ApiSpec{
             @RequestParam(defaultValue="20") int size
     ) {
         PageRequest pageable = PageRequest.of(page, size);
-        List<ProductInfo> productInfos = productFacade.getProductList(brandName, sort.name(), pageable);
+        List<ProductInfo> productInfos = productFacade.getProductList(brandName, sort, pageable);
         List<ProductV1Dto.ProductResponse> responses = productInfos.stream()
                 .map(ProductV1Dto.ProductResponse::from)
                 .toList();

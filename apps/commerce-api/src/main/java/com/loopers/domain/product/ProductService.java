@@ -52,8 +52,16 @@ public class ProductService {
         productRepository.saveProduct(product);
     }
 
-    public Page<ProductListVo> getProducts(String brandName, String sort, Pageable pageable){
-        return productRepository.findAllProdcutListVo(brandName, sort, pageable);
+    public Page<ProductListVo> getProducts(String brandName, ProductSortCondition sort, Pageable pageable){
+        if (sort == null) sort = ProductSortCondition.LATEST;
+
+        return productRepository.findAllProdcutListVoByLikeDesc(brandName, pageable);
+        // 추후 정렬 조건에 따라 분기 태울 예정
+//        return switch (sort) {
+//            case LIKE_DESC ->  productRepository.findAllProdcutListVoByLikeDesc(brandName, pageable);
+//        };
+     
+
     }
 
 }
