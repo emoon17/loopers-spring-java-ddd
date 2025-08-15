@@ -11,6 +11,7 @@ import com.loopers.domain.user.UserModel;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,58 +27,30 @@ public class ProductFacade {
     private final ProductWithBrandService productWithBrandService;
     private final LikeService likeService;
 
-    public List<ProductInfo> getProductList(ProductSortCondition sortCondition) {
-        // 1. 상품 조회
-        List<ProductModel> products = productService.getAllProducts(sortCondition);
-        // 2. 브랜드 조회
-        Map<String, BrandModel> brandMap =
-                brandService.getBrandsById(products.stream()
-                        .map(ProductModel::getBrandId)
-                        .distinct()
-                        .toList()
-                ).stream().collect(Collectors.toMap(
-                        BrandModel::getBrandId, Function.identity()
-                ));
-        // 3. 상품 + 브랜드 조합
-        List<ProductWithBrand> productWithBrandList =
-                productWithBrandService.toProductWithBrandList(products, brandMap);
-
-        // 4. 좋아요 갯수 조회
-        Map<String, Integer> likeTotalMap = likeService.getProductLikeSummaries(products.stream()
-                .map(ProductModel::getProductId)
-                .toList())
-                .stream().collect(Collectors.toMap(
-                        LikeSummaryModel::getProductId,
-                        LikeSummaryModel::getTotalLikeCount
-                ));
-
-        // 5. 응답 info에 세팅
-        return productWithBrandList.stream()
-                .map(pwb -> ProductInfo.fromList(
-                        pwb.getProduct(),
-                        pwb.getBrand().getBrandName(),
-                        likeTotalMap.getOrDefault(pwb.getProduct().getProductId(), 0)                ))
+    public List<ProductInfo> getProductList(String brandName, ProductSortCondition sort, Pageable pageable) {
+        var products = productService.getProducts(brandName, sort, pageable);
+        return products.stream()
+                .map(ProductInfo::fromList)
                 .collect(Collectors.toList());
-
     }
 
-    public ProductInfo getProduct(ProductModel product, UserModel user) {
+    public ProductInfo getProduct(String productId, String loginId) {
         // 1. 상품 조회
-        ProductModel productModel = productService.getProduct(product)
+        ProductModel productModel = productService.getProduct(productId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "상품이 존재하지 않습니다."));
 
         // 2. 브랜드 조회
-        BrandModel brandModel = brandService.getBrandByProductId(product)
+        BrandModel brandModel = brandService.getBrandByProductId(productId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "존재하지 않는 브랜드입니다."));
 
         // 3. 상품 + 브랜드 조합
         ProductWithBrand productWithBrand = productWithBrandService.toProductWithBrand(productModel, brandModel);
 
         // 4. 좋아요 갯수 조회
-        LikeSummaryModel likeSummaryModel = likeService.getProductLikeSummary(product);
+        LikeSummaryModel likeSummaryModel = likeService.getProductLikeSummary(productModel);
 
         // 5. 사용자 좋아요 조회
-        LikeModel likeModel =  likeService.getLike(product, user).orElse(null);
+        LikeModel likeModel =  likeService.getLike(productModel, loginId).orElse(null);
 
         // 6. 응답
         return ProductInfo.fromDetail(

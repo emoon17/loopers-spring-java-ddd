@@ -19,9 +19,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -74,14 +77,20 @@ public class ProductServiceIntegrationTest {
         @Test
         void retrunAllProducts_whenGetProducts(){
             // arrange
+            BrandModel brand = brandJpaRepository.save(new BrandModel("B001", "나이키"));
+            brandJpaRepository.flush();
+            ZonedDateTime now = ZonedDateTime.now();
+
             productJpaRepository.save(
                     new ProductModel(
                             "product1",
                             "상품1",
                             "상품1임당",
-                            "brand1",
+                            brand,
                             10000L,
-                            3L
+                            3L,
+                            now,
+                            now
                     )
             );
 
@@ -90,9 +99,11 @@ public class ProductServiceIntegrationTest {
                             "product2",
                             "상품2",
                             "상품2임당",
-                            "brand2",
+                            brand,
                             30000L,
-                            6L
+                            6L,
+                            now,
+                            now
                     )
             );
 
@@ -103,7 +114,7 @@ public class ProductServiceIntegrationTest {
             assertThat(result).isNotEmpty();
             assertThat(result.size()).isEqualTo(2);
             assertThat(result.get(0).getProductId()).isEqualTo("product2");
-            assertThat(result.get(1).getBrandId()).isEqualTo("brand1");
+            assertThat(result.get(1).getBrand().getBrandId()).isEqualTo("brand1");
         }
 
 
@@ -115,53 +126,41 @@ public class ProductServiceIntegrationTest {
         BrandModel brand = brandJpaRepository.save(new BrandModel("B001", "나이키"));
         brandJpaRepository.flush();
 
-        ProductModel product1 = productJpaRepository.save(new ProductModel("P001", "신발", "편한 신발", brand.getBrandId(), 10000L, 5L));
-        ProductModel product2 = productJpaRepository.save(new ProductModel("P002", "운동화", "빠른 신발", brand.getBrandId(), 20000L, 3L));
+        ZonedDateTime now = ZonedDateTime.now();
+
+        ProductModel product1 = productJpaRepository.save(
+                new ProductModel("P001", "신발", "편한 신발", brand, 10000L, 5L, now,  now));
+        productJpaRepository.flush();
+        ProductModel product2 = productJpaRepository.save(
+                new ProductModel("P002", "운동화", "빠른 신발", brand, 20000L, 3L, now, now));
         productJpaRepository.flush();
 
         likeSummaryJpaRepository.save(new LikeSummaryModel(product1.getProductId(), 5));
+        likeSummaryJpaRepository.flush();
         likeSummaryJpaRepository.save(new LikeSummaryModel(product2.getProductId(), 0));
         likeSummaryJpaRepository.flush();
 
         // act
-        List<ProductModel> products = productService.getAllProducts(ProductSortCondition.PRICE_DESC);
-
-        List<String> brandIds = products.stream()
-                .map(ProductModel::getBrandId)
-                .distinct()
-                .toList();
-        Map<String, BrandModel> brandMap = brandJpaRepository.findAllById(brandIds).stream()
-                .collect(Collectors.toMap(BrandModel::getBrandId, Function.identity()));
-        for (ProductModel p : products) {
-            System.out.println("상품 ID: " + p.getProductId() + " / brandId: " + p.getBrandId());
-        }
-        System.out.println("brandMap keys: " + brandMap.keySet());
-
-        List<ProductWithBrand> productWithBrands = productWithBrandService.toProductWithBrandList(products, brandMap);
-
-        List<String> productIds = products.stream()
-                .map(ProductModel::getProductId)
-                .toList();
-        Map<String, Integer> likeMap = likeSummaryJpaRepository.findLikeCountByProductIdIn(productIds).stream()
-                .collect(Collectors.toMap(
-                        LikeSummaryModel::getProductId,
-                        LikeSummaryModel::getTotalLikeCount
-                ));
-
-        List<ProductInfo> result = productWithBrands.stream()
-                .map(pwb -> ProductInfo.fromList(
-                        pwb.getProduct(),
-                        pwb.getBrand().getBrandName(),
-                        likeMap.getOrDefault(pwb.getProduct().getProductId(), 0)
-                ))
-                .toList();
+        Page<ProductListVo> result = productService.getProducts(
+                brand.getBrandId(),
+                "LIKES_DESC",
+                PageRequest.of(0, 20)
+        );
 
         // assert
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).productId()).isEqualTo("P002"); // 가격 높은 순 정렬
-        assertThat(result.get(0).brandName()).isEqualTo("나이키");
-        assertThat(result.get(0).likeCount()).isEqualTo(0);
-        assertThat(result.get(1).likeCount()).isEqualTo(5);
+        assertThat(result.getContent()).hasSize(2);
+
+        ProductListVo first = result.getContent().get(0);
+        ProductListVo second = result.getContent().get(1);
+
+        assertThat(first.productId()).isEqualTo("P001");
+        assertThat(first.totalLikeCount()).isEqualTo(5);
+
+        assertThat(second.productId()).isEqualTo("P002");
+        assertThat(second.totalLikeCount()).isEqualTo(0);
+
+        assertThat(result.getNumber()).isEqualTo(0);
+        assertThat(result.getSize()).isEqualTo(20);
     }
 
     @DisplayName("상품 상세 조회시, 브랜드, 좋아요 요약, 사용자 좋아요 포함 응답이 반환된다.")
@@ -170,10 +169,11 @@ public class ProductServiceIntegrationTest {
         // arrange
         BrandModel brand = brandJpaRepository.save(new BrandModel("B001", "나이키"));
         brandJpaRepository.flush();
+        ZonedDateTime now = ZonedDateTime.now();
 
         // 2. 상품 저장
         ProductModel product = productJpaRepository.save(
-                new ProductModel("P001", "운동화", "편한 운동화", brand.getBrandId(), 50000L, 10L)
+                new ProductModel("P001", "운동화", "편한 운동화", brand, 50000L, 10L, now, now)
         );
         productJpaRepository.flush();
 
@@ -221,6 +221,10 @@ public class ProductServiceIntegrationTest {
         @Test
         void stockIsCorrectlyDecreased_whenMultipleDecreasedRequestSameProduct()throws InterruptedException{
         // arrange
+            BrandModel brand = brandJpaRepository.save(new BrandModel("b001", "나이키"));
+            brandJpaRepository.flush();
+            ZonedDateTime now = ZonedDateTime.now();
+
             ExecutorService executor = Executors.newFixedThreadPool(1000);
             CountDownLatch countDownLatch = new CountDownLatch(2000);
 
@@ -231,9 +235,11 @@ public class ProductServiceIntegrationTest {
                             productId,
                             "운동화",
                             "런닝 운동화",
-                            "b001",
+                            brand,
                             1000L,
-                            initialStock
+                            initialStock,
+                            now,
+                            now
                     )
             );
             List<OrderItemModel> items = List.of(

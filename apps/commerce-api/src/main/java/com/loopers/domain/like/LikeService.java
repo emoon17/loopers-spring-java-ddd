@@ -54,9 +54,9 @@ public class LikeService {
     }
 
 
-    public Optional<LikeModel> getLike(ProductModel productModel, UserModel userModel) {
+    public Optional<LikeModel> getLike(ProductModel productModel, String loginId) {
         // optional 고민
-       return likeRepository.findByLoginIdAndProductId(productModel.getProductId(), userModel.getLoginId());
+       return likeRepository.findByLoginIdAndProductId(loginId, productModel.getProductId());
     }
 
     public List<LikeSummaryModel> getProductLikeSummaries (List<String> productId) {

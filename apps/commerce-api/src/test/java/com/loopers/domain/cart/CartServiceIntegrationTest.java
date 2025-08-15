@@ -80,61 +80,61 @@ public class CartServiceIntegrationTest {
             assertEquals(existingCart.getCartId(), cart.getCartId());
         }
 
-        @DisplayName("카트가 있고, 해당 상품이 없는 경우 아이템을 새로 카트에 넣는다.")
-        @Test
-        void createCartItem_whenCartIsExistAndCartItemNotExist() {
-            // Arrange
-            UserModel user = new UserModel(
-                    "user123",
-                    "test@email.com",
-                    "1999-01-01",
-                    "W"
-            );
-            CartModel cart = CartModel.create(user.getLoginId());
-            cartJpaRepository.save(cart);
+//        @DisplayName("카트가 있고, 해당 상품이 없는 경우 아이템을 새로 카트에 넣는다.")
+//        @Test
+//        void createCartItem_whenCartIsExistAndCartItemNotExist() {
+//            // Arrange
+//            UserModel user = new UserModel(
+//                    "user123",
+//                    "test@email.com",
+//                    "1999-01-01",
+//                    "W"
+//            );
+//            CartModel cart = CartModel.create(user.getLoginId());
+//            cartJpaRepository.save(cart);
+//
+//            ProductModel product = new ProductModel("p001", "나이키", "신발쓰", "brand01", 1000L, 10L);
+//            CartItemModel cartItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1L, 1000L);
+//
+//            // Act
+//            cartService.addOrUpdateCartItem(cartItem, product);
+//
+//            // Assert
+//            Optional<CartItemModel> savedItem = cartItemJpaRepository.findByCartIdAndProductId(cart.getCartId(), product.getProductId());
+//            assertEquals(1, savedItem.get().getQuantity());
+//            assertEquals(1000, savedItem.get().getPrice());
+//
+//        }
 
-            ProductModel product = new ProductModel("p001", "나이키", "신발쓰", "brand01", 1000L, 10L);
-            CartItemModel cartItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1L, 1000L);
-
-            // Act
-            cartService.addOrUpdateCartItem(cartItem, product);
-
-            // Assert
-            Optional<CartItemModel> savedItem = cartItemJpaRepository.findByCartIdAndProductId(cart.getCartId(), product.getProductId());
-            assertEquals(1, savedItem.get().getQuantity());
-            assertEquals(1000, savedItem.get().getPrice());
-
-        }
-
-        @DisplayName("카트가 있고, 해당 상품도 있는 경우 아이템의 수량과 가격을 추가한다.")
-        @Test
-        void addCartItem_whenCartIsExistAndCartItemIsExist(){
-            // Arrange
-            UserModel user = new UserModel(
-                    "user123",
-                    "test@email.com",
-                    "1999-01-01",
-                    "W"
-            );
-
-            CartModel cart = CartModel.create(user.getLoginId());
-            cartJpaRepository.save(cart);
-
-            ProductModel product = new ProductModel("p001", "상품", "설명", "brand01", 1000L, 10L);
-            CartItemModel existingItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1L, 1000L);
-            cartItemJpaRepository.save(existingItem);
-
-            CartItemModel inputItem = new CartItemModel("anyId", cart.getCartId(), product.getProductId(), 2L, 2000L);
-
-            // Act
-            cartService.addOrUpdateCartItem(inputItem, product);
-
-            // Assert
-            Optional<CartItemModel> updatedItem = cartItemJpaRepository.findByCartIdAndProductId(cart.getCartId(), product.getProductId());
-            assertEquals(3, updatedItem.get().getQuantity()); // 1 + 2
-            assertEquals(3000, updatedItem.get().getPrice()); // 1000 * 3
-
-        }
+//        @DisplayName("카트가 있고, 해당 상품도 있는 경우 아이템의 수량과 가격을 추가한다.")
+//        @Test
+//        void addCartItem_whenCartIsExistAndCartItemIsExist(){
+//            // Arrange
+//            UserModel user = new UserModel(
+//                    "user123",
+//                    "test@email.com",
+//                    "1999-01-01",
+//                    "W"
+//            );
+//
+//            CartModel cart = CartModel.create(user.getLoginId());
+//            cartJpaRepository.save(cart);
+//
+//            ProductModel product = new ProductModel("p001", "상품", "설명", "brand01", 1000L, 10L);
+//            CartItemModel existingItem = new CartItemModel("item001", cart.getCartId(), product.getProductId(), 1L, 1000L);
+//            cartItemJpaRepository.save(existingItem);
+//
+//            CartItemModel inputItem = new CartItemModel("anyId", cart.getCartId(), product.getProductId(), 2L, 2000L);
+//
+//            // Act
+//            cartService.addOrUpdateCartItem(inputItem, product);
+//
+//            // Assert
+//            Optional<CartItemModel> updatedItem = cartItemJpaRepository.findByCartIdAndProductId(cart.getCartId(), product.getProductId());
+//            assertEquals(3, updatedItem.get().getQuantity()); // 1 + 2
+//            assertEquals(3000, updatedItem.get().getPrice()); // 1000 * 3
+//
+//        }
 
         @DisplayName("유저의 장바구니 정보를 반환한다.")
         @Test

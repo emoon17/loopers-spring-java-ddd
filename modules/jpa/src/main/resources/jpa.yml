@@ -37,12 +37,12 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
 
 datasource:
   mysql-jpa:
     main:
-      jdbc-url: jdbc:mysql://localhost:3306/loopers
+      jdbc-url: jdbc:mysql://localhost:3306/loopers?useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&characterEncoding=utf8&serverTimezone=Asia/Seoul
       username: application
       password: application
 
