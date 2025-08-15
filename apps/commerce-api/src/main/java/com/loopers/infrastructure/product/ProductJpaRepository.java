@@ -40,7 +40,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductModel, String
           from BrandModel br
           where br.brandName like concat(:brandName, '%')  
       )
-    )                                                                   )
+    )                                                                   
      order by ls.totalLikeCount desc, ls.productId asc
 """)
     Page<ProductListVo> findAllProdcutListVoByLikeDesc(
