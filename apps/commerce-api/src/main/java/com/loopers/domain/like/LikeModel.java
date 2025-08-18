@@ -9,9 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Table(
-        name = "like_table"
+        name = "like_table",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_like_user_product",
+                columnNames = {"login_id","product_id"}
+        )
 )
-public class LikeModel extends BaseEntity {
+public class LikeModel {
+    @Id
     private String likeId;
     private String productId;
     private String loginId;
