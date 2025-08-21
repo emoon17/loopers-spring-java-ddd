@@ -50,6 +50,7 @@ subprojects {
         runtimeOnly("org.springframework.boot:spring-boot-starter-validation")
         // Spring
         implementation("org.springframework.boot:spring-boot-starter")
+        implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
         // Serialize
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
         // Lombok
