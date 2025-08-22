@@ -18,7 +18,7 @@ public class OrderModel {
     @Id
     private String orderId;
     private String loginId;
-    private String status;
+    private OrderStatus status;
     private String orderType; // 장바구니 -> 오더 , 바로 오더
     private Long totalQuantity;
     private Long totalPrice;
@@ -27,7 +27,7 @@ public class OrderModel {
 
     protected OrderModel() {}
 
-    public OrderModel(String orderId, String loginId, String status, String orderType, Long totalQuantity, Long totalPrice, String createdAt, String updatedAt) {
+    public OrderModel(String orderId, String loginId, OrderStatus status, String orderType, Long totalQuantity, Long totalPrice, String createdAt, String updatedAt) {
         this.orderId = orderId;
         this.loginId = loginId;
         this.status = status;
@@ -50,7 +50,7 @@ public class OrderModel {
         return new OrderModel(
                 UUID.randomUUID().toString(),
                 loginId,
-                "",
+                OrderStatus.WAITING_FOR_PAYMENT,
                 orderType,
                 totalQuantity,
                 totalPrice,
@@ -62,5 +62,6 @@ public class OrderModel {
     public long getTotalPrice() {
         return this.totalPrice;
     }
-
+    public void markPaid() { this.status = OrderStatus.PAID; }
+    public void markPaymentFailed() { this.status = OrderStatus.PAYMENT_FAILED; }
 }

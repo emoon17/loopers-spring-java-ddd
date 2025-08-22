@@ -24,6 +24,11 @@ spring:
       - logging.yml
       - monitoring.yml
 
+datasource:
+  mysql-jpa:
+    main:
+      jdbc-url: jdbc:mysql://localhost:3306/paymentgateway
+
 springdoc:
   use-fqn: true
   swagger-ui:
@@ -35,11 +40,25 @@ spring:
     activate:
       on-profile: local, test
 
+server:
+  port: 8082
+
+management:
+  server:
+    port: 8083
+
 ---
 spring:
   config:
     activate:
       on-profile: dev
+
+server:
+  port: 8082
+
+management:
+  server:
+    port: 8083
 
 ---
 spring:
@@ -56,26 +75,3 @@ spring:
 springdoc:
   api-docs:
     enabled: false
-
-resilience4j:
-  retry:
-    instances:
-      pgRetry:
-        max-attempts: 3
-        wait-duration: 500ms
-        retry-exceptions:
-          - feign.RetryableException
-          - java.net.SocketTimeoutException
-        fail-after-max-attempts: true
-  circuitbreaker:
-    instances:
-      pgCircuit:
-        sliding-window-size: 10
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 2
-        slow-call-duration-threshold: 2s
-        slow-call-rate-threshold: 50
-pg:
-  base:
-    url: http://localhost:8082
