@@ -50,7 +50,9 @@ subprojects {
         runtimeOnly("org.springframework.boot:spring-boot-starter-validation")
         // Spring
         implementation("org.springframework.boot:spring-boot-starter")
-        implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+        implementation ("org.springframework.cloud:spring-cloud-starter-openfeign")
+        implementation ("io.github.resilience4j:resilience4j-spring-boot3")
+        implementation ("org.springframework.boot:spring-boot-starter-aop")
         // Serialize
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
         // Lombok
@@ -68,6 +70,9 @@ subprojects {
         testImplementation("org.springframework.boot:spring-boot-testcontainers")
         testImplementation("org.testcontainers:testcontainers")
         testImplementation("org.testcontainers:junit-jupiter")
+        // Resilence4j
+        implementation ("io.github.resilience4j:resilience4j-spring-boot3")
+        implementation ("org.springframework.boot:spring-boot-starter-aop")
     }
 
     tasks.withType(Jar::class) { enabled = true }

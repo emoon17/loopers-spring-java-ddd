@@ -14,6 +14,7 @@ kotlin {
     }
 }
 
+
 dependencies {
     // add-ons
     implementation(project(":modules:jpa"))
