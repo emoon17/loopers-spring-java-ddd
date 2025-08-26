@@ -3,6 +3,7 @@ package com.loopers.infrastructure.pg;
 
 import com.loopers.domain.payments.PaymentStatus;
 import com.loopers.domain.payments.port.PgClientPort;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -39,22 +40,21 @@ public class PgClientAdapter implements PgClientPort {
 
     @Override
     @Retry(name="pgRetry", fallbackMethod="fallbackRequest")
-    @CircuitBreaker(name="pgCircuit", fallbackMethod="fallbackRequest")
+    @CircuitBreaker(name="pgCircuit")
     public PgPaymentsResponse retrievePayments(String userId, PgPaymentsRequest request) {
-        PgFeignClient.PgPaymentsDto dto = pgClient.request(
-                userId,
-                new PgFeignClient.PgPaymentsDto(
-                        null,                      // transactionId (PG가 생성)
-                        request.orderId(),
-                        request.amount(),
-                        request.cardType(),
-                        request.cardNo(),
-                        null,
-                        request.callbackUrl()
-                )
-        );
+        try {
+            var dto = pgClient.request(userId, new PgFeignClient.PgPaymentsDto(
+                    null, request.orderId(), request.amount(), request.cardType(),
+                    request.cardNo(), null, request.callbackUrl()
+            ));
+            return map(dto);
 
-        return map(dto);
+        } catch (FeignException e) {
+            if (e.status() >= 400 && e.status() < 500) {
+                // 400대만 FAILED 처리한다.
+                return new PgPaymentsResponse(null, request.orderId(), PaymentStatus.FAILED);
+            }
+            throw e;        }
     }
 
     @Override
