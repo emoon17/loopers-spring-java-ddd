@@ -143,7 +143,7 @@ public class ProductServiceIntegrationTest {
         // act
         Page<ProductListVo> result = productService.getProducts(
                 brand.getBrandId(),
-                "LIKES_DESC",
+                ProductSortCondition.LIKES_DESC,
                 PageRequest.of(0, 20)
         );
 
