@@ -64,7 +64,7 @@ public class PgClientAdapter implements PgClientPort {
         return map(pgClient.requestByTransactionId(userId, transactionId));
     }
 
-    public PgPaymentsResponse fallbackRequest(String userId, PgPaymentsRequest request) {
+    public PgPaymentsResponse fallbackRequest(String userId, PgPaymentsRequest request, Throwable throwable) {
         return new PgPaymentsResponse(null, request.orderId(), PaymentStatus.PENDING);
     }
 }

@@ -28,6 +28,9 @@ springdoc:
   use-fqn: true
   swagger-ui:
     path: /swagger-ui.html
+pg:
+  base:
+    url: http://localhost:8082
 
 ---
 spring:
@@ -62,10 +65,11 @@ resilience4j:
     instances:
       pgRetry:
         max-attempts: 3
-        wait-duration: 500ms
+        wait-duration: 200ms
         retry-exceptions:
           - feign.RetryableException
           - java.net.SocketTimeoutException
+          - java.io.IOException
         fail-after-max-attempts: true
   circuitbreaker:
     instances:
@@ -76,6 +80,7 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 2
         slow-call-duration-threshold: 2s
         slow-call-rate-threshold: 50
-pg:
-  base:
-    url: http://localhost:8082
+        record-exceptions:
+          - feign.RetryableException
+          - java.net.SocketTimeoutException
+          - java.io.IOException

@@ -48,14 +48,14 @@ public class OrderFacade {
         OrderModel order = OrderModel.create(user.getLoginId(), orderItems, "CART");
         orderItems.forEach(item -> item.assignOrderId(order.getOrderId()));
 
-        // 쿠폰 차감
-        couponFacade.applyCoupon(user, orderItems, userCouponId);
-
-        // 4. 포인트 차감
-        pointService.usePoint(user.getLoginId(), order.getTotalPrice());
-
-        // 5. product 재고 차감
-        productService.decreaseProductStock(orderItems);
+//        // 쿠폰 차감
+//        couponFacade.applyCoupon(user, orderItems, userCouponId);
+//
+//        // 4. 포인트 차감
+//        pointService.usePoint(user.getLoginId(), order.getTotalPrice());
+//
+//        // 5. product 재고 차감
+//        productService.decreaseProductStock(orderItems);
 
         // 6. 주문 저장
         orderService.saveOrder(order);
@@ -94,19 +94,23 @@ public class OrderFacade {
      * 결제가 확정(SUCCESS)된 후 주문 확정 처리 (콜백/스케줄러에서 호출)
      */
     @Transactional
-    public void finalizeOrderAfterPayment(String orderId) {
+    public void finalizeOrderAfterPayment(UserModel user, String orderId, List<OrderItemModel> orderItems, String userCouponId ) {
         var status = paymentsFacade.getCurrnentStatus(orderId);
-        var order = orderService.findOrderById(orderId);
+        OrderModel order = orderService.findOrderById(orderId);
 
         if (status == PaymentStatus.SUCCESS) {
-
+            couponFacade.applyCoupon(user, orderItems, userCouponId);
+            pointService.usePoint(order.getLoginId(), order.getTotalPrice());
+            productService.decreaseProductStock(orderItems);
             order.markPaid();
             orderService.saveOrder(order);
             // 영수증/알림 등 추가
         } else if (status == PaymentStatus.FAILED || status == PaymentStatus.REJECTED) {
             order.markPaymentFailed();
             orderService.saveOrder(order);
-            // 필요시 롤백/알림
+            // 필요시 롤백/알림 -todo
+        } else {
+            throw new CoreException(ErrorType.BAD_REQUEST, "결제가 아직 완료되지 않았습니다.");
         }
     }
 

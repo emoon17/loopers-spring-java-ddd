@@ -6,6 +6,7 @@ import com.loopers.domain.payments.PaymentsService;
 import com.loopers.domain.payments.port.PgClientPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -27,13 +28,14 @@ public class PaymentsFacade {
     /**
      * 트랜잭션 밖에서 PG 요청 -> transactionId 저장(상태는 pending)
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void requestToPg(String userId, String paymentsId, String cardType, String cardNo, String callbackUrl) {
         var paymentsModel = paymentsService.findById(paymentsId);
         var res = pgClientPort.retrievePayments(userId, new PgClientPort.PgPaymentsRequest(
                 paymentsModel.getOrderId(), paymentsModel.getAmount(), cardType, cardNo, callbackUrl
         ));
 
-        // pg가 tx를 발급해줬다면 붙여두기
+        // pg가 tx를 발급해줬다면 붙여둔다.
         if (res.transactionId() != null && (paymentsModel.getTransactionId() == null)) {
             paymentsModel.attachTransaction(res.transactionId());
             paymentsService.save(paymentsModel);

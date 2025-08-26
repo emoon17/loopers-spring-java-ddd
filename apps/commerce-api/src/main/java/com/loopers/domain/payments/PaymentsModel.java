@@ -1,9 +1,6 @@
 package com.loopers.domain.payments;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +13,7 @@ import java.time.ZonedDateTime;
 public class PaymentsModel {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String paymentId;
     private String orderId;
     private String transactionId;
