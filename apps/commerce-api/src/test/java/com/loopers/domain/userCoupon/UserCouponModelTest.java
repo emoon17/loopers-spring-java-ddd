@@ -36,7 +36,7 @@ public class UserCouponModelTest {
 
             // act assert
             CoreException result = assertThrows(CoreException.class, () -> {
-                userCouponModel.validateOwner(user);
+                userCouponModel.validateOwner(user.getLoginId());
             });
 
             assertEquals(ErrorType.NOT_FOUND, result.getErrorType());

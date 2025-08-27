@@ -24,10 +24,10 @@ public class UserCouponService {
     }
 
     @Transactional
-    public UserCouponModel useCoupon(UserModel user, String userCouponId) {
+    public UserCouponModel useCoupon(String loginId, String userCouponId) {
         UserCouponModel userCoupon = getUserCouponByUserCouponId(userCouponId);
 
-        userCoupon.validateOwner(user);
+        userCoupon.validateOwner(loginId);
         userCoupon.use();
 
         return userCouponRepository.saveUserCoupon(userCoupon);
