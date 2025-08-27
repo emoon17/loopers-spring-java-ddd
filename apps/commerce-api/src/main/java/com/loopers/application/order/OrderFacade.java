@@ -45,7 +45,7 @@ public class OrderFacade {
                 .toList();
 
         // 3. OrderModel 생성
-        OrderModel order = OrderModel.create(user.getLoginId(), orderItems, "CART");
+        OrderModel order = OrderModel.create(user.getLoginId(), orderItems, "CART", userCouponId);
         orderItems.forEach(item -> item.assignOrderId(order.getOrderId()));
 
 //        // 쿠폰 차감
@@ -62,7 +62,7 @@ public class OrderFacade {
         orderService.saveOrderItems(orderItems);
 
         // 결제시도
-        String paymentId = paymentsFacade.startAttempt(order.getOrderId(), order.getTotalPrice());
+        String paymentId = paymentsFacade.startAttempt(user.getLoginId(), order.getOrderId(), order.getTotalPrice());
 
         // pg호출
         afterCommit(()-> paymentsFacade.requestToPg(
@@ -94,12 +94,17 @@ public class OrderFacade {
      * 결제가 확정(SUCCESS)된 후 주문 확정 처리 (콜백/스케줄러에서 호출)
      */
     @Transactional
-    public void finalizeOrderAfterPayment(UserModel user, String orderId, List<OrderItemModel> orderItems, String userCouponId ) {
-        var status = paymentsFacade.getCurrnentStatus(orderId);
+    public void finalizeOrderAfterPayment(String orderId, PaymentStatus status ) {
+        System.out.print("status ::: "+ status);
+        System.out.print("orderId ::: "+ orderId);
+
         OrderModel order = orderService.findOrderById(orderId);
+        List<OrderItemModel> orderItems = orderService.findOrderItems(orderId);
 
         if (status == PaymentStatus.SUCCESS) {
-            couponFacade.applyCoupon(user, orderItems, userCouponId);
+            if (order.getUserCouponId() != null) { // 쿠폰 쪽에서 없어도 넘어갈 수 있도록 해야됌.
+                couponFacade.applyCoupon(order.getLoginId(), orderItems, order.getUserCouponId());
+            }
             pointService.usePoint(order.getLoginId(), order.getTotalPrice());
             productService.decreaseProductStock(orderItems);
             order.markPaid();

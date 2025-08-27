@@ -21,15 +21,19 @@ public class PaymentsModel {
     private String cardType;
     private String cardNo;
     private Long amount;
+    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
     protected PaymentsModel() {}
 
+
+
     /** 결제 시도만 했을 때(성공 여부 필요 없음) */
-    public static PaymentsModel newPending(String orderId, long amount){
+    public static PaymentsModel newPending(String loginId, String orderId, long amount){
         PaymentsModel pay = new PaymentsModel();
+        pay.loginId = loginId;
         pay.orderId = orderId;
         pay.amount = amount;
         pay.status = PaymentStatus.PENDING;

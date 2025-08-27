@@ -19,8 +19,8 @@ public class PaymentsFacade {
     private final PgClientPort pgClientPort;
 
     @Transactional
-    public String startAttempt(String orderId, long amount) {
-        var paymentsModel = PaymentsModel.newPending(orderId, amount);
+    public String startAttempt(String loginId, String orderId, long amount) {
+        var paymentsModel = PaymentsModel.newPending(loginId, orderId, amount);
         paymentsService.save(paymentsModel);
         return paymentsModel.getPaymentId();
     }
@@ -56,17 +56,17 @@ public class PaymentsFacade {
         paymentsService.save(found);
     }
 
-    public PaymentStatus getCurrnentStatus(String orderId) {
-        var latestStatus = paymentsService.findByOrderIdLatest(orderId);
-        return latestStatus.getStatus();
-    }
+//    public PaymentStatus getCurrnentStatus(String orderId) {
+//        var latestStatus = paymentsService.findByOrderIdLatest(orderId);
+//        return latestStatus.getStatus();
+//    }
 
     /**
      * PG로부터 동기화 후 최종 상태 반환
      * */
     @Transactional
-    public PaymentStatus syncFromPgAndgGetStatus(String userId, String orderId) {
-        var pg = pgClientPort.getTransactionIds(userId, orderId);
+    public PaymentStatus syncFromPgAndgGetStatus(String loginId, String orderId) {
+        var pg = pgClientPort.getTransactionIds(loginId, orderId);
         PaymentsModel paymentsLatest = paymentsService.findByOrderIdLatest(orderId);
 
         if(paymentsLatest.getTransactionId() == null && pg.transactionId() != null) {

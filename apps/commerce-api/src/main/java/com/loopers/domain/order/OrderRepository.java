@@ -9,4 +9,5 @@ public interface OrderRepository {
     void saveOrder(OrderModel order);
     void saveOrderItems(List<OrderItemModel> orderItems);
     OrderModel findByOrderId(String orderId);
+    List<OrderItemModel> findOrderItems(String orderid);
 }

@@ -13,7 +13,7 @@ public interface PgClientPort {
     // pg -> 나
     record PgPaymentsResponse(String transactionId, String orderId, PaymentStatus status){}
 
-    PgPaymentsResponse retrievePayments(String userId, PgPaymentsRequest request);
-    PgPaymentsResponse getTransactionIds(String userId, String transactionId);
+    PgPaymentsResponse retrievePayments(String loginId, PgPaymentsRequest request);
+    PgPaymentsResponse getTransactionIds(String loginId, String orderId);
 
 }

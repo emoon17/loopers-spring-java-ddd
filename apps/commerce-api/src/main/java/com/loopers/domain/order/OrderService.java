@@ -22,5 +22,9 @@ public class OrderService {
     }
     public OrderModel findOrderById(String orderId) {return orderRepository.findByOrderId(orderId);}
 
+    public List<OrderItemModel> findOrderItems(String orderid) {
+        return orderRepository.findOrderItems(orderid);
+    }
+
 
 }

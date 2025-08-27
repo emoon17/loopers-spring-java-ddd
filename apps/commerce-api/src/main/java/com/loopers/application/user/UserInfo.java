@@ -11,4 +11,12 @@ public record UserInfo(Long id, String loginId, String email, String birth, Stri
                 model.getBirth(),
                 model.getGender());
     }
+    public static UserModel from(UserInfo userInfo) {
+        return new UserModel(
+                userInfo.loginId,
+                userInfo.email,
+                userInfo.birth,
+                userInfo.gender
+        );
+    }
 }

@@ -25,4 +25,8 @@ public class PaymentsService {
         return paymentsRepository.findByOrderIdLatest(orderId);
     }
 
+    public List<PaymentsModel> findPendingOrders() {
+        return paymentsRepository.findPendingOrders(PaymentStatus.PENDING);
+    }
+
 }
