@@ -17,7 +17,9 @@ import com.loopers.domain.payments.event.PaymentSucceededEvent;
 import com.loopers.domain.payments.event.RequestPaymentsCommand;
 import com.loopers.domain.point.PointModel;
 import com.loopers.domain.point.PointService;
+import com.loopers.domain.point.event.UsePointCommand;
 import com.loopers.domain.product.ProductService;
+import com.loopers.domain.product.event.DecreaseStockCommand;
 import com.loopers.domain.userCoupon.event.UseCouponCommand;
 import com.loopers.domain.user.UserModel;
 import com.loopers.domain.userCoupon.UserCouponService;
@@ -50,25 +52,21 @@ public class OrderFacade {
         List<OrderItemModel> orderItems = OrderItemModel.fromCartItems(cartItems, null);
         OrderModel order = orderService.handle(new CreatedOrderCommand(user.getLoginId(), orderItems, "CART", userCouponId));
 
-        productService.decreaseProductStock(orderItems);
+        productService.handle(new DecreaseStockCommand(orderItems));
 
         Long totalPrice = order.getTotalPrice();
-        if (order.getUserCouponId() != null) { // 쿠폰 쪽에서 없어도 넘어갈 수 있도록 해야됌. - todo
+        if (order.getUserCouponId() != null) {
             CouponModel coupon = couponService.getCouponbyCouponIdWithLock(userCouponId);
-            // 쿠폰 차감
+            totalPrice = coupon.applyDiscount(totalPrice);
             userCouponService.handle(new UseCouponCommand(
                     user.getLoginId(), userCouponId
             ));
-            
-            // 결제금액
-            totalPrice = coupon.applyDiscount(totalPrice);
         }
 
-        PointModel pointModel = pointService.getPointModelByLoginId(user.getLoginId());
-        pointService.usePoint(order.getOrderId(), user.getLoginId() , useAmount); //차감
-        totalPrice = pointModel.applyToPayment(totalPrice, useAmount); // 결제금액
+        totalPrice = pointService.handle(new UsePointCommand(
+                order.getOrderId(), user.getLoginId() , useAmount, totalPrice
+        ));
 
-        // pg호출
         paymentsService.handle(
                 new RequestPaymentsCommand(
                         order.getOrderId(),
@@ -80,7 +78,6 @@ public class OrderFacade {
                 )
         );
 
-        // 7. 주문 정보 반환
         List<OrderItemInfo> orderItemInfos = orderItems.stream()
                 .map(OrderItemInfo::from)
                 .toList();

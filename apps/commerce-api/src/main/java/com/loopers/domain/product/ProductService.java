@@ -4,6 +4,7 @@ import com.loopers.application.product.ProductSortCondition;
 import com.loopers.domain.brand.BrandModel;
 import com.loopers.domain.order.OrderItemModel;
 import com.loopers.domain.order.OrderService;
+import com.loopers.domain.product.event.DecreaseStockCommand;
 import com.loopers.support.cache.CacheKeys;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -46,8 +47,8 @@ public class ProductService {
     }
 
     @Transactional
-    public void decreaseProductStock(List<OrderItemModel> orderItems) {
-        for (OrderItemModel item : orderItems) {
+    public void handle(DecreaseStockCommand command) {
+        for (OrderItemModel item : command.items()) {
             ProductModel product = getProductByProductIdWithLock(item.getProductId())
                     .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "상품이 존재하지 않습니다."));
             product.decreaseStock(item.getQuantity());

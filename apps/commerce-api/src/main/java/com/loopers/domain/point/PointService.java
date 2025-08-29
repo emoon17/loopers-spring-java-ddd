@@ -1,5 +1,6 @@
 package com.loopers.domain.point;
 
+import com.loopers.domain.point.event.UsePointCommand;
 import com.loopers.domain.user.UserModel;
 import com.loopers.domain.user.UserRepository;
 import com.loopers.support.error.CoreException;
@@ -31,13 +32,14 @@ public class PointService {
     }
 
     @Transactional
-    public void usePoint(String orderId, String loginId, Long amount) {
-        PointModel pointModel = pointRepository.findPointByLoginIdWithLock(loginId)
+    public Long handle(UsePointCommand command) {
+        PointModel pointModel = pointRepository.findPointByLoginIdWithLock(command.loginId())
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
-        pointModel.usePoint(amount);
+        pointModel.usePoint(command.useAmount());
 
         pointRepository.save(pointModel);
-        pointRepository.savePointHistory(PointHistoryModel.used(orderId, loginId, amount));
+        pointRepository.savePointHistory(PointHistoryModel.used(command.orderId(), command.loginId(), command.useAmount()));
+        return pointModel.applyToPayment(command.totalPriceBefore(), command.useAmount());
     }
 
     @Transactional
