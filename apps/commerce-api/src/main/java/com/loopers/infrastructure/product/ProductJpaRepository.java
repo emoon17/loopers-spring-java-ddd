@@ -38,7 +38,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductModel, String
       or b.brandId in (
           select br.brandId
           from BrandModel br
-          where br.brandName like concat(:brandName, '%')  
+          where br.brandName like concat(:brandName, '%')    
       )
     )                                                                   
      order by ls.totalLikeCount desc, ls.productId asc

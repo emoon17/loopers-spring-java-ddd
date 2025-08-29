@@ -1,13 +1,14 @@
 package com.loopers.application.order;
 
 import com.loopers.domain.order.OrderModel;
+import com.loopers.domain.order.OrderStatus;
 
 import java.util.List;
 
 public record OrderInfo(
         String orderId,
         String loginId,
-        String status,
+        OrderStatus status,
         String orderType,
         Long totalQuantity,
         Long totalPrice,

@@ -20,6 +20,11 @@ public class OrderService {
     public void saveOrderItems(List<OrderItemModel> orderItems) {
         orderRepository.saveOrderItems(orderItems);
     }
+    public OrderModel findOrderById(String orderId) {return orderRepository.findByOrderId(orderId);}
+
+    public List<OrderItemModel> findOrderItems(String orderid) {
+        return orderRepository.findOrderItems(orderid);
+    }
 
 
 }

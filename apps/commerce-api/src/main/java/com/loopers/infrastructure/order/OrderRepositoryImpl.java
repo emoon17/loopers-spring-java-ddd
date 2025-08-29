@@ -25,4 +25,14 @@ public class OrderRepositoryImpl implements OrderRepository {
     public void saveOrderItems(List<OrderItemModel> orderItems) {
         orderItemJpaRepository.saveAll(orderItems);
     }
+
+    @Override
+    public OrderModel findByOrderId(String orderId) {
+        return orderJpaRepository.findById(orderId).orElse(null);
+    }
+
+    @Override
+    public List<OrderItemModel> findOrderItems(String orderid) {
+        return orderItemJpaRepository.findOrderItems(orderid);
+    }
 }

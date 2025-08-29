@@ -23,10 +23,10 @@ public class CouponFacade {
     private final UserCouponService userCouponService;
 
     @Transactional
-    public void applyCoupon(UserModel user, List<OrderItemModel> orderItems, String userCouponId) {
+    public void applyCoupon(String loginId, List<OrderItemModel> orderItems, String userCouponId) {
         UserCouponModel userCoupon;
         try {
-            userCoupon = userCouponService.useCoupon(user, userCouponId);
+            userCoupon = userCouponService.useCoupon(loginId, userCouponId);
         } catch (org.springframework.orm.ObjectOptimisticLockingFailureException | jakarta.persistence.OptimisticLockException e) {
             // 다른 스레드가 먼저 쿠폰을 사용함 → 비즈니스 의미로 변환
             throw new CoreException(ErrorType.BAD_REQUEST, "이미 사용된 쿠폰입니다.");

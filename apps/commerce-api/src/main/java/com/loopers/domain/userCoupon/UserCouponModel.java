@@ -36,8 +36,8 @@ public class UserCouponModel {
     }
 
 
-    public void validateOwner(UserModel user) {
-        if (!this.loginId.equals(user.getLoginId())) {
+    public void validateOwner(String loginId) {
+        if (!this.loginId.equals(loginId)) {
             throw new CoreException(ErrorType.NOT_FOUND, "본인의 쿠폰이 아닙니다.");
         }
     }
