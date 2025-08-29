@@ -1,22 +1,15 @@
 package com.loopers.domain.userCoupon;
 
-import com.loopers.domain.coupon.CouponService;
-import com.loopers.infrastructure.coupon.CouponJpaRepository;
+import com.loopers.domain.userCoupon.event.UseCouponCommand;
 import com.loopers.infrastructure.userCoupon.UserCouponJapRepository;
-import com.loopers.support.error.CoreException;
-import com.loopers.support.error.ErrorType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
-
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 public class UserCouponServiceTest {
@@ -34,20 +27,36 @@ public class UserCouponServiceTest {
         @Test
         void retrunNotFound_whenUserCouponIsNotExist() {
             // arrange
-            UserCouponModel usercoupon = new UserCouponModel(
-                    "",
-                    "user123",
-                    "coupon123",
-                    "2025-01-01"
-            );
+            UserCouponModel userCoupon = new UserCouponModel("userCouponId01", "loginId01", "coupon-001", "2025-01-01");
+            userCouponJpaRepository.save(userCoupon);
 
-            // act + assert
-            CoreException result = assertThrows(CoreException.class, () ->
-                    userCouponService.getUserCouponByUserCouponId(usercoupon.getUserCouponId())
-            );
+            UseCouponCommand command = new UseCouponCommand(userCoupon.getLoginId(), userCoupon.getUserCouponId());
 
-            assertThat(result.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
+            // act
+            UserCouponModel updated = userCouponService.handle(command);
+
+            // assert
+            assertThat(updated.isUsed()).isTrue();
+
+            UserCouponModel reloaded = userCouponJpaRepository.findUserCouponByUserCouponId("userCouponId01").orElseThrow();
+            assertThat(reloaded.isUsed()).isTrue();
         }
 
+    }
+
+    @Test
+    @DisplayName("UseCouponCommand 처리 → 쿠폰 사용 상태로 변경된다")
+    void handle_success() {
+        // arrange
+        UseCouponCommand command = new UseCouponCommand("loginId01", "userCouponId01");
+
+        // act
+        UserCouponModel updated = userCouponService.handle(command);
+
+        // assert
+        assertThat(updated.isUsed()).isTrue();
+
+        UserCouponModel reloaded = userCouponJpaRepository.findUserCouponByUserCouponId("userCouponId01").orElseThrow();
+        assertThat(reloaded.isUsed()).isTrue();
     }
 }

@@ -56,6 +56,13 @@ public class CouponModel {
         };
     }
 
+    public Long applyDiscount(Long totalPrice) {
+        Long discount = calculateDiscount(totalPrice);
+        Long finalPrice = totalPrice - discount;
+        if(finalPrice < 0 ) finalPrice = 0L;
+        return finalPrice;
+    }
+
     public enum CouponType {
         FIXED, PERCENT
     }

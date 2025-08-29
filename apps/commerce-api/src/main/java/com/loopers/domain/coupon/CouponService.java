@@ -18,7 +18,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
 
     @Transactional
-    public CouponModel getCouponbyCouponId(String couponId) {
+    public CouponModel getCouponbyCouponIdWithLock(String couponId) {
         return couponRepository.findCouponByCouponIdWithLock(couponId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "쿠폰 정책이 존재하지 않습니다."));
     }

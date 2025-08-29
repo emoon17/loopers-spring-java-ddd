@@ -42,5 +42,15 @@ public class PointModel extends BaseEntity {
         this.amount -= useAmount;
     }
 
+    public Long applyToPayment(Long totalPrice, Long useAmount){
+        if(totalPrice == null || totalPrice <= 0) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "포인트 차감할 결제금액이 없습니다.");
+        }
+        usePoint(useAmount);
+        Long finalPrice = totalPrice - this.amount;
+        if(finalPrice < 0) finalPrice = 0L;
+        return finalPrice;
+    }
+
 
 }

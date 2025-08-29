@@ -54,6 +54,10 @@ public class ProductModel {
         stock -= quantity;
     }
 
+    public void increaseStock(Long quantity) {
+        stock += quantity;
+    }
+
 
 
 }

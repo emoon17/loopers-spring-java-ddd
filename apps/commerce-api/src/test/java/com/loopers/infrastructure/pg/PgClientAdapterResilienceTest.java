@@ -1,9 +1,7 @@
-package com.loopers.infrastructure;
+package com.loopers.infrastructure.pg;
 
 import com.loopers.domain.payments.PaymentStatus;
 import com.loopers.domain.payments.port.PgClientPort;
-import com.loopers.infrastructure.pg.PgClientAdapter;
-import com.loopers.infrastructure.pg.PgFeignClient;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;

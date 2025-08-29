@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -38,6 +39,12 @@ public class OrderItemModel {
                 cartItem.getQuantity(),
                 cartItem.getPrice()
         );
+    }
+
+    public static List<OrderItemModel> fromCartItems(List<CartItemModel> cartItems, String orderId) {
+        return cartItems.stream()
+                .map(cartItem -> OrderItemModel.from(cartItem, orderId))
+                .toList();
     }
 
     public void assignOrderId(String orderId) {

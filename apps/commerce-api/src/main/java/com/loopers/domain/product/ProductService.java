@@ -3,11 +3,16 @@ package com.loopers.domain.product;
 import com.loopers.application.product.ProductSortCondition;
 import com.loopers.domain.brand.BrandModel;
 import com.loopers.domain.order.OrderItemModel;
+import com.loopers.domain.order.OrderService;
+import com.loopers.domain.product.event.DecreaseStockCommand;
+import com.loopers.domain.useraction.UserActionEvent;
+import com.loopers.domain.useraction.UserActionType;
 import com.loopers.support.cache.CacheKeys;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +32,7 @@ import java.util.Optional;
 public class ProductService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ProductRepository productRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<ProductModel> getAllProducts(ProductSortCondition sortCondition) {
         return productRepository.findAllProducts(sortCondition);
@@ -44,12 +51,30 @@ public class ProductService {
     }
 
     @Transactional
-    public void decreaseProductStock(List<OrderItemModel> orderItems) {
-        for (OrderItemModel item : orderItems) {
+    public void handle(DecreaseStockCommand command) {
+        for (OrderItemModel item : command.items()) {
             ProductModel product = getProductByProductIdWithLock(item.getProductId())
                     .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "상품이 존재하지 않습니다."));
             product.decreaseStock(item.getQuantity());
             saveProduct(product);
+
+            eventPublisher.publishEvent(
+                    new UserActionEvent(
+                            command.loginId(),
+                            UserActionType.PRODUCT,
+                            product.getProductId(),
+                            ZonedDateTime.now()
+                    )
+            );
+        }
+    }
+
+    @Transactional
+    public void restoreStock(String productId, Long quantity) {
+        ProductModel product = productRepository.findProductByProductId(productId).orElseThrow();
+        if (product.getStock() < quantity) {
+            product.increaseStock(quantity);
+            productRepository.saveProduct(product);
         }
     }
 

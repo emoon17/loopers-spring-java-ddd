@@ -1,6 +1,5 @@
 package com.loopers.domain.coupon;
 
-import com.loopers.application.coupon.CouponFacade;
 import com.loopers.domain.order.OrderItemModel;
 import com.loopers.domain.user.UserModel;
 import com.loopers.domain.userCoupon.UserCouponModel;
@@ -29,8 +28,6 @@ import static org.junit.Assert.assertThrows;
 @SpringBootTest
 public class CouponServiceTest {
 
-    @Autowired
-    private CouponFacade couponFacade;
 
     @Autowired
     private CouponService couponService;
@@ -94,7 +91,7 @@ public class CouponServiceTest {
 
         // act
         CoreException exception = assertThrows(CoreException.class, () -> {
-            couponService.getCouponbyCouponId(couponId);
+            couponService.getCouponbyCouponIdWithLock(couponId);
         });
 
         // assert

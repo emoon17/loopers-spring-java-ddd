@@ -8,12 +8,16 @@ import com.loopers.domain.like.LikeSummaryModel;
 import com.loopers.domain.product.ProductModel;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserModel;
+import com.loopers.domain.useraction.UserActionEvent;
+import com.loopers.domain.useraction.UserActionType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -26,6 +30,8 @@ public class ProductFacade {
     private final BrandService brandService;
     private final ProductWithBrandService productWithBrandService;
     private final LikeService likeService;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     public List<ProductInfo> getProductList(String brandName, ProductSortCondition sort, Pageable pageable) {
         var products = productService.getProducts(brandName, sort, pageable);
@@ -35,6 +41,16 @@ public class ProductFacade {
     }
 
     public ProductInfo getProduct(String productId, String loginId) {
+
+        eventPublisher.publishEvent(
+                new UserActionEvent(
+                        loginId,
+                        UserActionType.VIEW,
+                        productId,
+                        ZonedDateTime.now()
+                )
+        );
+
         // 1. 상품 조회
         ProductModel productModel = productService.getProduct(productId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "상품이 존재하지 않습니다."));
@@ -50,7 +66,7 @@ public class ProductFacade {
         LikeSummaryModel likeSummaryModel = likeService.getProductLikeSummary(productModel);
 
         // 5. 사용자 좋아요 조회
-        LikeModel likeModel =  likeService.getLike(productModel, loginId).orElse(null);
+        LikeModel likeModel =  likeService.getLikeByProductIdAndLoginId(productModel.getProductId(), loginId).orElse(null);
 
         // 6. 응답
         return ProductInfo.fromDetail(
