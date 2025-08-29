@@ -7,6 +7,7 @@ import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -20,43 +21,46 @@ import java.util.UUID;
 public class LikeService {
     private final LikeRepository likeRepository;
 
-    @Transactional
-    public void like(String loginId, String productId) {
-        LikeModel likeModel = likeRepository.findByLoginIdAndProductId(loginId, productId).orElse(null);
-        if (likeModel != null && likeModel.isLike()) return;
-        if (likeModel == null) {
-                likeModel = new LikeModel(UUID.randomUUID().toString(), productId, loginId,true);
-                likeRepository.saveLike(likeModel);
-        }
-        likeModel.like();
-        increaseLikeSummary(productId);
+//    @Transactional
+//    public void like(String loginId, String productId) {
+//        LikeModel likeModel = likeRepository.findByLoginIdAndProductId(loginId, productId).orElse(null);
+//        if (likeModel != null && likeModel.isLike()) return;
+//        if (likeModel == null) {
+//                likeModel = new LikeModel(UUID.randomUUID().toString(), productId, loginId,true);
+//                likeRepository.saveLike(likeModel);
+//        }
+//        likeModel.like();
+//        increaseLikeSummary(productId);
+//    }
+//
+//    @Transactional
+//    public void unLike(String loginId, String productId) {
+//        int updated = likeRepository.demoteToFalseIfTrue(loginId, productId);
+//        if (updated == 0) return;
+//        decreaseLikeSummary(productId);
+//    }
+//
+//    @Transactional
+//    public void increaseLikeSummary(String productId) {
+//        LikeSummaryModel summary = likeRepository.findLikeCountByProductIdWithLock(productId);
+//        summary.increase();
+//        likeRepository.saveLikeSummary(summary);
+//    }
+//
+//    @Transactional
+//    public void decreaseLikeSummary(String productId) {
+//        LikeSummaryModel summary = likeRepository.findLikeCountByProductIdWithLock(productId);
+//        summary.decrease();
+//        likeRepository.saveLikeSummary(summary);
+//    }
+
+    public LikeSummaryModel getLikeCountByProductIdWithLock(String productId) {
+        return likeRepository.findLikeCountByProductIdWithLock(productId);
     }
 
-    @Transactional
-    public void unLike(String loginId, String productId) {
-        int updated = likeRepository.demoteToFalseIfTrue(loginId, productId);
-        if (updated == 0) return;
-        decreaseLikeSummary(productId);
-    }
-
-    @Transactional
-    public void increaseLikeSummary(String productId) {
-        LikeSummaryModel summary = likeRepository.findLikeCountByProductIdWithLock(productId);
-        summary.increase();
-        likeRepository.saveLikeSummary(summary);
-    }
-
-    @Transactional
-    public void decreaseLikeSummary(String productId) {
-        LikeSummaryModel summary = likeRepository.findLikeCountByProductIdWithLock(productId);
-        summary.decrease();
-        likeRepository.saveLikeSummary(summary);
-    }
-
-
-    public Optional<LikeModel> getLike(ProductModel productModel, String loginId) {
+    public Optional<LikeModel> getLikeByProductIdAndLoginId(String productId, String loginId) {
         // optional 고민
-       return likeRepository.findByLoginIdAndProductId(loginId, productModel.getProductId());
+       return likeRepository.findByLoginIdAndProductId(loginId, productId);
     }
 
     public List<LikeSummaryModel> getProductLikeSummaries (List<String> productId) {

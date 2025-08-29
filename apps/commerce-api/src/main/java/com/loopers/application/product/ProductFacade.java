@@ -50,7 +50,7 @@ public class ProductFacade {
         LikeSummaryModel likeSummaryModel = likeService.getProductLikeSummary(productModel);
 
         // 5. 사용자 좋아요 조회
-        LikeModel likeModel =  likeService.getLike(productModel, loginId).orElse(null);
+        LikeModel likeModel =  likeService.getLikeByProductIdAndLoginId(productModel.getProductId(), loginId).orElse(null);
 
         // 6. 응답
         return ProductInfo.fromDetail(
