@@ -17,10 +17,9 @@ import com.loopers.domain.payments.event.PaymentSucceededEvent;
 import com.loopers.domain.payments.event.RequestPaymentsCommand;
 import com.loopers.domain.point.PointModel;
 import com.loopers.domain.point.PointService;
-import com.loopers.domain.product.ProductModel;
 import com.loopers.domain.product.ProductService;
+import com.loopers.domain.userCoupon.event.UseCouponCommand;
 import com.loopers.domain.user.UserModel;
-import com.loopers.domain.userCoupon.UserCouponModel;
 import com.loopers.domain.userCoupon.UserCouponService;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -30,7 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
+
 @RequiredArgsConstructor
 @Component
 public class OrderFacade {
@@ -45,39 +44,29 @@ public class OrderFacade {
 
     @Transactional
     public OrderInfo createOrderFromCart(UserModel user, String userCouponId, Long useAmount, String cardType, String cardNo, String callbackUrl) { // userCouponModel ㅍ람추가예정
-        // 1. 유저 장바구니 조회
         CartModel cart = cartService.getOrCreateCart(user);
         List<CartItemModel> cartItems = cartService.getAllCart(cart);
 
-        // 2. CartItem → OrderItemModel 리스트로 변환 --> order model 책임으로 리팩
-        // TODO 선택 주문일 경우, items 파라미터로 받아서 처리할건지?
-        List<OrderItemModel> orderItems = cartItems.stream()
-                .map(cartItem -> OrderItemModel.from(cartItem, null))
-                .toList();
-
-        // 3. OrderModel 생성
+        List<OrderItemModel> orderItems = OrderItemModel.fromCartItems(cartItems, null);
         OrderModel order = orderService.handle(new CreatedOrderCommand(user.getLoginId(), orderItems, "CART", userCouponId));
 
-
-        // 5. 재고 차감
         productService.decreaseProductStock(orderItems);
 
         Long totalPrice = order.getTotalPrice();
-        // 6. 쿠폰 차감
-        if (order.getUserCouponId() != null) { // 쿠폰 쪽에서 없어도 넘어갈 수 있도록 해야됌.
+        if (order.getUserCouponId() != null) { // 쿠폰 쪽에서 없어도 넘어갈 수 있도록 해야됌. - todo
             CouponModel coupon = couponService.getCouponbyCouponIdWithLock(userCouponId);
             // 쿠폰 차감
-            userCouponService.useCoupon(user.getLoginId(), userCouponId);
+            userCouponService.handle(new UseCouponCommand(
+                    user.getLoginId(), userCouponId
+            ));
             
             // 결제금액
             totalPrice = coupon.applyDiscount(totalPrice);
         }
 
-        // 6. 포인트 차감
         PointModel pointModel = pointService.getPointModelByLoginId(user.getLoginId());
         pointService.usePoint(order.getOrderId(), user.getLoginId() , useAmount); //차감
         totalPrice = pointModel.applyToPayment(totalPrice, useAmount); // 결제금액
-
 
         // pg호출
         paymentsService.handle(

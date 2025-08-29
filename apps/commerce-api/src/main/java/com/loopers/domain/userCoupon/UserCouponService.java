@@ -1,14 +1,12 @@
 package com.loopers.domain.userCoupon;
 
-import com.loopers.domain.user.UserModel;
+import com.loopers.domain.userCoupon.event.UseCouponCommand;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -24,10 +22,10 @@ public class UserCouponService {
     }
 
     @Transactional
-    public UserCouponModel useCoupon(String loginId, String userCouponId) {
-        UserCouponModel userCoupon = getUserCouponByUserCouponId(userCouponId);
+    public UserCouponModel handle(UseCouponCommand useCouponCommand) {
+        UserCouponModel userCoupon = getUserCouponByUserCouponId(useCouponCommand.userCouponId());
 
-        userCoupon.validateOwner(loginId);
+        userCoupon.validateOwner(useCouponCommand.loginId());
         userCoupon.use();
 
         return userCouponRepository.saveUserCoupon(userCoupon);
