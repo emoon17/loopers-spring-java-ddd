@@ -62,7 +62,7 @@ public class PaymentsService {
                 );
             } catch (Exception e) {
                 eventPublisher.publishEvent(
-                        new PaymentFailedEvent(command.orderId(), e.getMessage())
+                        new PaymentFailedEvent(command.orderId(), "",  e.getMessage())
                 );
             }
         });
