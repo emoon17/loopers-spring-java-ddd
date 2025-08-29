@@ -1,12 +1,15 @@
 package com.loopers.domain.order;
 
 import com.loopers.domain.order.event.CreatedOrderCommand;
+import com.loopers.domain.useraction.UserActionEvent;
+import com.loopers.domain.useraction.UserActionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -32,6 +35,15 @@ public class OrderService {
 
         orderRepository.saveOrder(order);
         orderRepository.saveOrderItems(command.items());
+
+        eventPublisher.publishEvent(
+                new UserActionEvent(
+                        command.loginId(),
+                        UserActionType.ORDER,
+                        order.getOrderId(),
+                        ZonedDateTime.now()
+                )
+        );
 
         return order;
     }

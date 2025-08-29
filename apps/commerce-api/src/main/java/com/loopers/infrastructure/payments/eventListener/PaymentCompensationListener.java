@@ -1,4 +1,4 @@
-package com.loopers.infrastructure.payments.dataPlatform;
+package com.loopers.infrastructure.payments.eventListener;
 
 import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.order.OrderItemModel;

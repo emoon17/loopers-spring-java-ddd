@@ -3,12 +3,17 @@ package com.loopers.domain.point;
 import com.loopers.domain.point.event.UsePointCommand;
 import com.loopers.domain.user.UserModel;
 import com.loopers.domain.user.UserRepository;
+import com.loopers.domain.useraction.UserActionEvent;
+import com.loopers.domain.useraction.UserActionType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.ZonedDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -17,6 +22,8 @@ public class PointService {
 
     private final PointRepository pointRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     public PointModel getPointModelByLoginId(String loginId) {
         return pointRepository.findPointByLoginId(loginId);
@@ -39,6 +46,7 @@ public class PointService {
 
         pointRepository.save(pointModel);
         pointRepository.savePointHistory(PointHistoryModel.used(command.orderId(), command.loginId(), command.useAmount()));
+
         return pointModel.applyToPayment(command.totalPriceBefore(), command.useAmount());
     }
 

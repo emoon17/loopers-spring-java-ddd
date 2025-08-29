@@ -23,6 +23,8 @@ import com.loopers.domain.product.event.DecreaseStockCommand;
 import com.loopers.domain.userCoupon.event.UseCouponCommand;
 import com.loopers.domain.user.UserModel;
 import com.loopers.domain.userCoupon.UserCouponService;
+import com.loopers.domain.useraction.UserActionEvent;
+import com.loopers.domain.useraction.UserActionType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import jakarta.transaction.Transactional;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -52,7 +55,7 @@ public class OrderFacade {
         List<OrderItemModel> orderItems = OrderItemModel.fromCartItems(cartItems, null);
         OrderModel order = orderService.handle(new CreatedOrderCommand(user.getLoginId(), orderItems, "CART", userCouponId));
 
-        productService.handle(new DecreaseStockCommand(orderItems));
+        productService.handle(new DecreaseStockCommand(order.getLoginId(), orderItems));
 
         Long totalPrice = order.getTotalPrice();
         if (order.getUserCouponId() != null) {
