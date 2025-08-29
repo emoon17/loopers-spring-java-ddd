@@ -52,4 +52,11 @@ public class UserCouponModel {
         validateNotUsed();
         this.used = true;
     }
+
+    public void restore() {
+        if (!this.used) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "이미 사용 가능 상태입니다.");
+        }
+        this.used = false;
+    }
 }

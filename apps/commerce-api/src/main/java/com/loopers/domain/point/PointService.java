@@ -31,14 +31,21 @@ public class PointService {
     }
 
     @Transactional
-    public PointModel usePoint(String loginId, Long amount) {
+    public void usePoint(String orderId, String loginId, Long amount) {
         PointModel pointModel = pointRepository.findPointByLoginIdWithLock(loginId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
         pointModel.usePoint(amount);
-        return pointRepository.save(pointModel);
+
+        pointRepository.save(pointModel);
+        pointRepository.savePointHistory(PointHistoryModel.used(orderId, loginId, amount));
     }
 
-    public void savePoint(PointModel pointModel) {
-        pointRepository.save(pointModel);
+    @Transactional
+    public void restorePoints(String orderId) {
+        PointHistoryModel used = pointRepository.findByOrderIdAndReason(orderId, "USE")
+                .orElseThrow();
+        PointModel point = pointRepository.findPointByLoginId(used.getLoginId());
+        point.chargePoint(used.getUsedAmount());
+        pointRepository.save(point);
     }
 }

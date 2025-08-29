@@ -32,4 +32,12 @@ public class UserCouponService {
 
         return userCouponRepository.saveUserCoupon(userCoupon);
     }
+
+    @Transactional
+    public void restoreCoupon(String userCouponId) {
+        UserCouponModel userCoupon = userCouponRepository.findUserCouponByUserCouponId(userCouponId)
+                .orElseThrow();
+        userCoupon.restore();
+        userCouponRepository.saveUserCoupon(userCoupon);
+    }
 }

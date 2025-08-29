@@ -3,6 +3,7 @@ package com.loopers.domain.product;
 import com.loopers.application.product.ProductSortCondition;
 import com.loopers.domain.brand.BrandModel;
 import com.loopers.domain.order.OrderItemModel;
+import com.loopers.domain.order.OrderService;
 import com.loopers.support.cache.CacheKeys;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class ProductService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ProductRepository productRepository;
+    private final OrderService orderService;
 
     public List<ProductModel> getAllProducts(ProductSortCondition sortCondition) {
         return productRepository.findAllProducts(sortCondition);
@@ -50,6 +52,15 @@ public class ProductService {
                     .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "상품이 존재하지 않습니다."));
             product.decreaseStock(item.getQuantity());
             saveProduct(product);
+        }
+    }
+
+    @Transactional
+    public void restoreStock(String productId, Long quantity) {
+        ProductModel product = productRepository.findProductByProductId(productId).orElseThrow();
+        if (product.getStock() < quantity) {
+            product.increaseStock(quantity);
+            productRepository.saveProduct(product);
         }
     }
 

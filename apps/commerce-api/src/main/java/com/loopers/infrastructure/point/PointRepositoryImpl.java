@@ -1,5 +1,6 @@
 package com.loopers.infrastructure.point;
 
+import com.loopers.domain.point.PointHistoryModel;
 import com.loopers.domain.point.PointModel;
 import com.loopers.domain.point.PointRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import java.util.Optional;
 @Component
 public class PointRepositoryImpl implements PointRepository {
     private final PointJpaRepository pointJpaRepository;
+    private final PointHistoryJpaRepository pointHistoryJpaRepository;
 
     @Override
     public PointModel save(PointModel point) {
@@ -26,5 +28,15 @@ public class PointRepositoryImpl implements PointRepository {
     @Override
     public Optional<PointModel> findPointByLoginIdWithLock(String loginId) {
         return pointJpaRepository.findByLoginIdWithLock(loginId);
+    }
+
+    @Override
+    public void savePointHistory(PointHistoryModel pointHistoryModel) {
+        pointHistoryJpaRepository.save(pointHistoryModel);
+    }
+
+    @Override
+    public Optional<PointHistoryModel> findByOrderIdAndReason(String orderId, String reason) {
+        return pointHistoryJpaRepository.findByOrderIdAndReason(orderId, reason);
     }
 }
