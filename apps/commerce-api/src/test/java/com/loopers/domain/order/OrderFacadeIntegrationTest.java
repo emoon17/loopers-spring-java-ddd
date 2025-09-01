@@ -1,9 +1,6 @@
 package com.loopers.domain.order;
 
-import com.loopers.application.coupon.CouponFacade;
 import com.loopers.application.order.OrderFacade;
-import com.loopers.application.order.OrderInfo;
-import com.loopers.application.payment.PaymentsFacade;
 import com.loopers.domain.brand.BrandModel;
 import com.loopers.domain.cart.CartItemModel;
 import com.loopers.domain.cart.CartModel;
@@ -11,6 +8,7 @@ import com.loopers.domain.cart.CartService;
 import com.loopers.domain.coupon.CouponModel;
 import com.loopers.domain.payments.PaymentStatus;
 import com.loopers.domain.payments.PaymentsModel;
+import com.loopers.domain.payments.PaymentsService;
 import com.loopers.domain.point.PointModel;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductModel;
@@ -77,9 +75,6 @@ public class OrderFacadeIntegrationTest {
     private OrderFacade orderFacade;
 
     @Autowired
-    private CouponFacade couponFacade;
-
-    @Autowired
     private PointJpaRepository pointJpaRepository;
 
     @Autowired
@@ -108,7 +103,7 @@ public class OrderFacadeIntegrationTest {
     @Autowired
     private UserCouponService userCouponService;
     @Autowired
-    private PaymentsFacade  paymentsFacade;
+    private PaymentsService paymentsFacade;
     @Autowired
     private PaymentsJpaRepository paymentsJpaRepository;
     @Autowired
@@ -145,7 +140,7 @@ public class OrderFacadeIntegrationTest {
 
             // act
             var orderInfo = orderFacade.createOrderFromCart(
-                    user, null, "SAMSUNG", "1234-5678-9814-1451", callbackUrl
+                    user, null,  100L,"SAMSUNG", "1234-5678-9814-1451", callbackUrl
             );
 
             // assert

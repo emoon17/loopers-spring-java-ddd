@@ -40,9 +40,7 @@ public class OrderModel {
     }
 
     public static OrderModel create(String loginId, List<OrderItemModel> items, String orderType, String userCouponId) {
-        Long totalPrice = items.stream()
-                .mapToLong(item -> item.getPrice() * item.getQuantity())
-                .sum();
+        Long totalPrice = calculateTotalPrice(items);
         Long totalQuantity = items.stream()
                 .mapToLong(OrderItemModel::getQuantity)
                 .sum();
@@ -60,7 +58,11 @@ public class OrderModel {
                 now
         );
     }
-
+    public static Long calculateTotalPrice(List<OrderItemModel> items) {
+        return items.stream()
+                .mapToLong(OrderItemModel::getPrice)
+                .sum();
+    }
     public long getTotalPrice() {
         return this.totalPrice;
     }

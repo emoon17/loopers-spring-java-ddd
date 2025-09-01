@@ -1,9 +1,15 @@
 package com.loopers.domain.order;
 
+import com.loopers.domain.order.event.CreatedOrderCommand;
+import com.loopers.domain.useraction.UserActionEvent;
+import com.loopers.domain.useraction.UserActionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -12,6 +18,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void saveOrder(OrderModel order) {
         orderRepository.saveOrder(order);
@@ -21,6 +28,25 @@ public class OrderService {
         orderRepository.saveOrderItems(orderItems);
     }
     public OrderModel findOrderById(String orderId) {return orderRepository.findByOrderId(orderId);}
+
+    @Transactional
+    public OrderModel handle(CreatedOrderCommand command) {
+        OrderModel order = OrderModel.create(command.loginId(), command.items(), command.orderType(), command.userCouponId());
+
+        orderRepository.saveOrder(order);
+        orderRepository.saveOrderItems(command.items());
+
+        eventPublisher.publishEvent(
+                new UserActionEvent(
+                        command.loginId(),
+                        UserActionType.ORDER,
+                        order.getOrderId(),
+                        ZonedDateTime.now()
+                )
+        );
+
+        return order;
+    }
 
     public List<OrderItemModel> findOrderItems(String orderid) {
         return orderRepository.findOrderItems(orderid);

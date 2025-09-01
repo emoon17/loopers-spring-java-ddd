@@ -10,4 +10,7 @@ public interface PointRepository {
 
     Optional<PointModel> findPointByLoginIdWithLock(String loginId);
 
+    void savePointHistory(PointHistoryModel pointHistoryModel);
+    Optional<PointHistoryModel> findByOrderIdAndReason(String orderId, String reason);
+
 }
